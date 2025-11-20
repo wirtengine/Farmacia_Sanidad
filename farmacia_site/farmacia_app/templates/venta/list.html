@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Listado de Ventas</h2>
+<a href="{% url 'venta_create' %}">Crear Nueva Venta</a>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Fecha</th>
+        <th>Cliente</th>
+        <th>Empleado</th>
+        <th>Total</th>
+        <th>Descuento</th>
+        <th>Impuesto</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+    {% for venta in ventas %}
+    <tr>
+        <td>{{ venta.id_venta }}</td>
+        <td>{{ venta.fecha }}</td>
+        <td>{{ venta.id_cliente }}</td>
+        <td>{{ venta.id_empleado }}</td>
+        <td>{{ venta.total }}</td>
+        <td>{{ venta.descuento }}</td>
+        <td>{{ venta.impuesto }}</td>
+        <td>{{ venta.estado }}</td>
+        <td>
+            <a href="{% url 'venta_edit' venta.id_venta %}">Editar</a>
+            <a href="{% url 'venta_delete' venta.id_venta %}">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

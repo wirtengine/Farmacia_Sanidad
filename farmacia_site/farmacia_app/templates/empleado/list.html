@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Empleados</h2>
+<a class="btn btn-primary mb-3" href="{% url 'empleado_create' %}">Nuevo Empleado</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Cédula</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in empleados %}
+        <tr>
+            <td>{{ e.nombre }}</td>
+            <td>{{ e.cedula }}</td>
+            <td>{{ e.telefono }}</td>
+            <td>{{ e.rol }}</td>
+            <td>
+                {% if e.estado == 1 %}
+                    Activo
+                {% else %}
+                    Inactivo
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn btn-sm btn-warning" href="{% url 'empleado_edit' e.id_empleado %}">Editar</a>
+                <a class="btn btn-sm btn-danger" href="{% url 'empleado_delete' e.id_empleado %}">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
