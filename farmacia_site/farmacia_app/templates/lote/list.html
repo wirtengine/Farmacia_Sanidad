@@ -1,0 +1,30 @@
+<h1>Lista de Lotes</h1>
+
+<a href="{% url 'lote_create' %}">➕ Crear Nuevo Lote</a>
+
+<table border="1">
+    <tr>
+        <th>ID</th
+        <th>Número Lote</th>
+        <th>Cantidad</th>
+        <th>Fabricación</th>
+        <th>Vencimiento</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for lote in lotes %}
+    <tr>
+        <td>{{ lote.id_lote }}</td>
+        <td>{{ lote.numero_lote }}</td>
+        <td>{{ lote.cantidad }}</td>
+        <td>{{ lote.fecha_fabricacion }}</td>
+        <td>{{ lote.fecha_vencimiento }}</td>
+        <td>{{ lote.estado }}</td>
+        <td>
+            <a href="{% url 'lote_edit' lote.id_lote %}">Editar</a> |
+            <a href="{% url 'lote_delete' lote.id_lote %}" onclick="return confirm('¿Seguro?');">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

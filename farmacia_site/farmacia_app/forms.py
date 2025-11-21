@@ -1,6 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Medicamento, Proveedor, Empleados, Venta
+from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente
+from datetime import date
+
 
 # ========================
 # FORMULARIOS DE PROVEEDORES
@@ -319,3 +321,269 @@ class VentaForm(forms.ModelForm):
         self.fields['id_empleado'].required = False
         self.fields['descuento'].required = False
         self.fields['impuesto'].required = False
+    
+class LoteForm(forms.ModelForm):
+    class Meta:
+        model = Lote
+        fields = '__all__'
+        widgets = {
+            'cantidad': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0'
+            }),
+            'numero_lote': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: L-2024-001'
+            }),
+            'fecha_fabricacion': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'fecha_vencimiento': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'estado': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Activo, Inactivo'
+            }),
+            'id_factura_compra': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Campos que no son obligatorios
+        self.fields['fecha_fabricacion'].required = False
+        self.fields['fecha_vencimiento'].required = False
+        self.fields['estado'].required = False
+        self.fields['id_factura_compra'].required = False
+
+    # =============================
+    # VALIDACIONES PERSONALIZADAS
+    # =============================
+
+    def clean_numero_lote(self):
+        numero_lote = self.cleaned_data.get('numero_lote')
+
+        if numero_lote:
+            lotes = Lote.objects.filter(numero_lote=numero_lote)
+
+            # Si estamos editando, excluir el registro actual
+            if self.instance and self.instance.pk:
+                lotes = lotes.exclude(pk=self.instance.pk)
+
+            if lotes.exists():
+                raise ValidationError('Ya existe un lote con este número de lote.')
+
+        return numero_lote
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        fecha_fabricacion = cleaned_data.get('fecha_fabricacion')
+        fecha_vencimiento = cleaned_data.get('fecha_vencimiento')
+
+        # Validación lógica de fechas
+        if fecha_fabricacion and fecha_vencimiento:
+            if fecha_fabricacion > fecha_vencimiento:
+                raise ValidationError(
+                    "La fecha de fabricación no puede ser mayor a la fecha de vencimiento."
+                )
+
+        return cleaned_data
+class FacturaCompraForm(forms.ModelForm):
+    class Meta:
+        model = FacturaCompra
+        fields = '__all__'
+
+        widgets = {
+            'fecha': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'total': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'step': '0.01'
+            }),
+            'id_proveedor': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'numero_factura': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: FAC-2024-001'
+            }),
+            'impuesto': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'step': '0.01'
+            }),
+            'estado': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Activa, Anulada'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Campos opcionales
+        self.fields['numero_factura'].required = False
+        self.fields['impuesto'].required = False
+        self.fields['estado'].required = False
+
+    # =============================
+    # VALIDACIONES PERSONALIZADAS
+    # =============================
+    
+    def clean_numero_factura(self):
+        numero_factura = self.cleaned_data.get('numero_factura')
+
+        if numero_factura:
+            facturas = FacturaCompra.objects.filter(numero_factura=numero_factura)
+
+            # Excluir este registro si estamos editando
+            if self.instance and self.instance.pk:
+                facturas = facturas.exclude(pk=self.instance.pk)
+
+            if facturas.exists():
+                raise ValidationError("Ya existe una factura con este número.")
+
+        return numero_factura
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        total = cleaned_data.get('total')
+        impuesto = cleaned_data.get('impuesto')
+
+        # No permitir valores negativos
+        if total is not None and total < 0:
+            raise ValidationError("El total no puede ser negativo.")
+
+        if impuesto is not None and impuesto < 0:
+            raise ValidationError("El impuesto no puede ser negativo.")
+
+        return cleaned_data
+    
+class LoteMedicamentoForm(forms.ModelForm):
+    class Meta:
+        model = LoteMedicamento
+        fields = '__all__'
+
+        widgets = {
+            'id_lote': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'id_medicamento': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'cantidad': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1',
+                'placeholder': 'Cantidad asignada'
+            }),
+            'fecha_ingreso': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+        }
+
+    # ===========================================
+    # CAMPOS OPCIONALES
+    # ===========================================
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['fecha_ingreso'].required = False
+
+    # ===========================================
+    # VALIDACIÓN: Cantidad no negativa
+    # ===========================================
+    def clean_cantidad(self):
+        cantidad = self.cleaned_data.get('cantidad')
+
+        if cantidad is not None and cantidad <= 0:
+            raise ValidationError("La cantidad debe ser mayor a cero.")
+
+        return cantidad
+
+    # ===========================================
+    # VALIDACIÓN INDIVIDUAL: evitar duplicados (mismo lote + medicamento)
+    # ===========================================
+    def clean(self):
+        cleaned_data = super().clean()
+
+        lote = cleaned_data.get('id_lote')
+        medicamento = cleaned_data.get('id_medicamento')
+
+        if lote and medicamento:
+            consulta = LoteMedicamento.objects.filter(
+                id_lote=lote,
+                id_medicamento=medicamento
+            )
+
+            # Si está editando, excluir el actual
+            if self.instance and self.instance.pk:
+                consulta = consulta.exclude(pk=self.instance.pk)
+
+            if consulta.exists():
+                raise ValidationError(
+                    "Este medicamento ya está asignado a este lote."
+                )
+
+        # Validación: fecha de ingreso no puede ser futura
+        fecha_ingreso = cleaned_data.get('fecha_ingreso')
+        from datetime import date
+
+        if fecha_ingreso and fecha_ingreso > date.today():
+            raise ValidationError("La fecha de ingreso no puede ser en el futuro.")
+
+        return cleaned_data
+    
+class ClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = '__all__'
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'direccion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'cedula': forms.TextInput(attrs={'class': 'form-control'}),
+            'correo': forms.EmailInput(attrs={'class': 'form-control'}),
+            'fecha_registro': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacer todos los campos opcionales excepto nombre si quieres
+        self.fields['fecha_registro'].required = False
+        self.fields['cedula'].required = False
+        self.fields['correo'].required = False
+        self.fields['direccion'].required = False
+        self.fields['telefono'].required = False
+
+    def clean_cedula(self):
+        cedula = self.cleaned_data.get('cedula')
+        # Si la cédula está vacía, está bien
+        if not cedula:
+            return cedula
+            
+        # Limpiar espacios
+        cedula = cedula.strip()
+        
+        # Validación más flexible - permitir letras, números, guiones y espacios
+        import re
+        if not re.match(r'^[A-Za-z0-9\-\.\s]+$', cedula):
+            raise ValidationError("La cédula solo puede contener letras, números, guiones, puntos y espacios.")
+        
+        return cedula
+
+    def clean_fecha_registro(self):
+        fecha = self.cleaned_data.get('fecha_registro')
+        if fecha and fecha > date.today():
+            raise ValidationError("La fecha no puede ser futura.")
+        return fecha

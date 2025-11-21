@@ -36,4 +36,38 @@ urlpatterns = [
     path('ventas/crear/', views.venta_create, name='venta_create'),
     path('ventas/editar/<int:id_venta>/', views.venta_edit, name='venta_edit'),
     path('ventas/eliminar/<int:id_venta>/', views.venta_delete, name='venta_delete'),
+
+    # =======================
+    # RUTAS DE LOTES
+    # =======================
+    path('lotes/', views.lote_list, name='lote_list'),
+    path('lotes/crear/', views.lote_create, name='lote_create'),
+    path('lotes/editar/<int:id_lote>/', views.lote_edit, name='lote_edit'),
+    path('lotes/eliminar/<int:id_lote>/', views.lote_delete, name='lote_delete'),
+
+    # ==========================
+    # RUTAS DE FACTURA COMPRA
+    # ==========================
+
+    path('facturas-compra/', views.facturacompra_list, name='facturacompra_list'),
+    path('facturas-compra/crear/', views.facturacompra_create, name='facturacompra_create'),
+    path('facturas-compra/editar/<int:id_factura_compra>/', views.facturacompra_edit, name='facturacompra_edit'),
+    path('facturas-compra/eliminar/<int:id_factura_compra>/', views.facturacompra_delete, name='facturacompra_delete'),
+    
+    # ==========================
+    # RUTAS LOTE_MEDICAMENTO
+    # ==========================
+
+    path('lote-medicamento/', views.lotemedicamento_list, name='lotemedicamento_list'),
+    path('lote-medicamento/crear/', views.lotemedicamento_create, name='lotemedicamento_create'),
+    path('lote-medicamento/editar/<int:id_lote_medicamento>/', views.lotemedicamento_edit, name='lotemedicamento_edit'),
+    path('lote-medicamento/eliminar/<int:id_lote_medicamento>/', views.lotemedicamento_delete, name='lotemedicamento_delete'),
+    
+    #Rutas clientes
+    
+    path('clientes/', views.cliente_list, name='cliente_list'),                # Lista clientes
+    path('clientes/nuevo/', views.cliente_create, name='cliente_create'),      # Crear cliente
+    path('clientes/editar/<int:pk>/', views.cliente_edit, name='cliente_edit'),# Editar cliente
+    path('clientes/eliminar/<int:pk>/', views.cliente_delete, name='cliente_delete'), # Eliminar client
+
 ]

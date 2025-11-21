@@ -1,6 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Medicamento, Proveedor, Empleados, Venta
-from .forms import MedicamentoForm, ProveedorForm, EmpleadoForm, VentaForm
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.contrib import messages
+from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente
+from .forms import MedicamentoForm, ProveedorForm, EmpleadoForm, VentaForm, LoteForm,FacturaCompraForm, LoteMedicamentoForm, ClienteForm
+
 
 # ===========================
 # VISTA HOME (MENÚ PRINCIPAL)
@@ -212,3 +216,265 @@ def venta_delete(request, id_venta):
     venta = get_object_or_404(Venta, pk=id_venta)
     venta.delete()
     return redirect('venta_list')
+
+def lote_list(request):
+    lotes = Lote.objects.all()
+    return render(request, 'lote/list.html', {'lotes': lotes})
+
+
+def lote_create(request):
+    if request.method == 'POST':
+        form = LoteForm(request.POST)
+
+        print("=== DATOS DEL FORMULARIO (POST) ===")
+        for key, value in request.POST.items():
+            print(f"{key}: {value}")
+
+        if form.is_valid():
+            lote = form.save(commit=False)
+
+            # Validaciones básicas para evitar errores
+            if lote.cantidad is None:
+                lote.cantidad = 0
+            if not lote.numero_lote:
+                lote.numero_lote = "SIN-LOTE"
+            if not lote.estado:
+                lote.estado = "DESCONOCIDO"
+
+            lote.save()
+            return redirect('lote_list')
+        else:
+            print("=== ERRORES DEL FORMULARIO ===")
+            print(form.errors)
+
+    else:
+        form = LoteForm()
+
+    return render(request, 'lote/create.html', {'form': form})
+
+
+def lote_edit(request, id_lote):
+    lote = get_object_or_404(Lote, pk=id_lote)
+
+    print(f"=== EDITANDO LOTE ID: {id_lote} ===")
+    print(f"Número lote: {lote.numero_lote}")
+    print(f"Cantidad: {lote.cantidad}")
+    print(f"Estado: {lote.estado}")
+
+    if request.method == 'POST':
+        form = LoteForm(request.POST, instance=lote)
+
+        print("=== DATOS DEL FORMULARIO (POST) ===")
+        for key, value in request.POST.items():
+            print(f"{key}: {value}")
+
+        if form.is_valid():
+            lote_actualizado = form.save(commit=False)
+
+            if lote_actualizado.cantidad is None:
+                lote_actualizado.cantidad = 0
+            if not lote_actualizado.numero_lote:
+                lote_actualizado.numero_lote = "SIN-LOTE"
+            if not lote_actualizado.estado:
+                lote_actualizado.estado = "DESCONOCIDO"
+
+            lote_actualizado.save()
+            return redirect('lote_list')
+
+        else:
+            print("=== ERRORES DEL FORMULARIO ===")
+            print(form.errors)
+
+    else:
+        form = LoteForm(instance=lote)
+        print("=== FORMULARIO CARGADO (GET) ===")
+
+    return render(request, 'lote/edit.html', {
+        'form': form,
+        'lote': lote
+    })
+
+
+def lote_delete(request, id_lote):
+    lote = get_object_or_404(Lote, pk=id_lote)
+    lote.delete()
+    return redirect('lote_list')
+
+# LISTAR FACTURAS
+def facturacompra_list(request):
+    facturas = FacturaCompra.objects.all()
+    return render(request, 'facturas/facturacompra_list.html', {'facturas': facturas})
+
+
+# CREAR FACTURA
+def facturacompra_create(request):
+    if request.method == 'POST':
+        form = FacturaCompraForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('facturacompra_list')
+    else:
+        form = FacturaCompraForm()
+
+    return render(request, 'facturas/facturacompra_form.html', {'form': form, 'titulo': 'Crear Factura'})
+
+
+# EDITAR FACTURA
+def facturacompra_edit(request, id_factura_compra):
+    factura = get_object_or_404(FacturaCompra, id_factura_compra=id_factura_compra)
+
+    if request.method == 'POST':
+        form = FacturaCompraForm(request.POST, instance=factura)
+        if form.is_valid():
+            form.save()
+            return redirect('facturacompra_list')
+    else:
+        form = FacturaCompraForm(instance=factura)
+
+    return render(request, 'facturas/facturacompra_form.html', {'form': form, 'titulo': 'Editar Factura'})
+
+
+# ELIMINAR FACTURA
+def facturacompra_delete(request, id_factura_compra):
+    factura = get_object_or_404(FacturaCompra, id_factura_compra=id_factura_compra)
+
+    if request.method == 'POST':
+        factura.delete()
+        return redirect('facturacompra_list')
+
+    return render(request, 'facturas/facturacompra_delete.html', {'factura': factura})
+
+# LISTAR LOTES DE MEDICAMENTOS
+def lotemedicamento_list(request):
+    lotes = LoteMedicamento.objects.all()
+    return render(request, 'lotemedicamento/list.html', {'lotes': lotes})
+
+
+# CREAR LOTE
+def lotemedicamento_create(request):
+    if request.method == 'POST':
+        form = LoteMedicamentoForm(request.POST)
+        if form.is_valid():
+
+            lote = form.save(commit=False)
+
+            # Validación simple
+            if lote.cantidad is None:
+                lote.cantidad = 0
+
+            lote.save()
+            return redirect('lotemedicamento_list')
+
+    else:
+        form = LoteMedicamentoForm()
+
+    return render(request, 'lotemedicamento/form.html', {
+        'form': form,
+        'titulo': 'Asignar Medicamento a Lote'
+    })
+
+
+# EDITAR LOTE
+def lotemedicamento_edit(request, id_lote_medicamento):
+    lote_med = get_object_or_404(LoteMedicamento, pk=id_lote_medicamento)
+
+    if request.method == 'POST':
+        form = LoteMedicamentoForm(request.POST, instance=lote_med)
+        if form.is_valid():
+            form.save()
+            return redirect('lotemedicamento_list')
+
+    else:
+        form = LoteMedicamentoForm(instance=lote_med)
+
+    return render(request, 'lotemedicamento/form.html', {
+        'form': form,
+        'titulo': 'Editar Lote de Medicamento'
+    })
+
+
+# ELIMINAR LOTE
+def lotemedicamento_delete(request, id_lote_medicamento):
+    lote_med = get_object_or_404(LoteMedicamento, pk=id_lote_medicamento)
+
+    if request.method == 'POST':
+        lote_med.delete()
+        return redirect('lotemedicamento_list')
+
+    return render(request, 'lotemedicamento/delete.html', {'lote': lote_med})
+
+def cliente_list(request):
+    clientes = Cliente.objects.all()
+    return render(request, 'cliente/cliente_list.html', {'clientes': clientes})
+
+# ===========================
+# CREAR CLIENTE
+# ===========================
+def cliente_list(request):
+    clientes = Cliente.objects.all()
+    return render(request, 'cliente/cliente_list.html', {'clientes': clientes})
+
+# ===========================
+# CREAR CLIENTE
+# ===========================
+def cliente_create(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            try:
+                # Guardar el formulario
+                form.save()
+                messages.success(request, "Cliente registrado exitosamente.")
+                return redirect('cliente_list')
+            except Exception as e:
+                messages.error(request, f"Error al guardar: {str(e)}")
+        else:
+            # Mostrar errores específicos del formulario
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = ClienteForm()
+    
+    return render(request, 'cliente/cliente_form.html', {'form': form, 'titulo': 'Nuevo Cliente'})
+
+# ===========================
+# EDITAR CLIENTE
+# ===========================
+def cliente_edit(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, "Cliente actualizado correctamente.")
+                return redirect('cliente_list')
+            except Exception as e:
+                messages.error(request, f"Error al guardar: {str(e)}")
+        else:
+            # Mostrar errores específicos del formulario
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = ClienteForm(instance=cliente)
+    
+    return render(request, 'cliente/cliente_form.html', {'form': form, 'titulo': 'Editar Cliente'})
+
+# ===========================
+# ELIMINAR CLIENTE (SOLO BOTÓN - SIN TEMPLATE DE CONFIRMACIÓN)
+# ===========================
+def cliente_delete(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            cliente.delete()
+            messages.success(request, "Cliente eliminado correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al eliminar: {str(e)}")
+    
+    # Siempre redirigir a la lista, independientemente del método
+    return redirect('cliente_list')
