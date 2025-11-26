@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Devoluciones a Proveedores</h2>
+
+    <a href="{% url 'devolucionprov_create' %}" class="btn btn-primary mb-3">Registrar Devolución</a>
+
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Factura Compra</th>
+                <th>Productos Devueltos</th>
+                <th>Cantidad</th>
+                <th>Fecha Aprobación</th>
+                <th>Fecha Registro</th>
+                <th>Estado</th>
+                <th>Empleado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in devoluciones %}
+            <tr>
+                <td>{{ d.id_devolucion }}</td>
+                <td>{{ d.id_factura_compra }}</td>
+                <td>{{ d.productos_devueltos }}</td>
+                <td>{{ d.cantidad_devuelta }}</td>
+                <td>{{ d.fecha_aprobacion }}</td>
+                <td>{{ d.fecha_registro }}</td>
+                <td>{{ d.estado }}</td>
+                <td>{{ d.id_empleado }}</td>
+                <td>
+                    <a href="{% url 'devolucionprov_edit' d.id_devolucion %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'devolucionprov_delete' d.id_devolucion %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="text-center">No hay devoluciones registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

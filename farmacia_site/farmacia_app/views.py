@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente
-from .forms import MedicamentoForm, ProveedorForm, EmpleadoForm, VentaForm, LoteForm,FacturaCompraForm, LoteMedicamentoForm, ClienteForm
+from django.db import transaction
+from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente, DevolucionCliente,DevolucionProveedor
+from .forms import MedicamentoForm, ProveedorForm, EmpleadoForm, VentaForm, LoteForm,FacturaCompraForm, LoteMedicamentoForm, ClienteForm,DevolucionClienteForm,DevolucionProveedorForm
 
 
 # ===========================
@@ -478,3 +479,149 @@ def cliente_delete(request, pk):
     
     # Siempre redirigir a la lista, independientemente del método
     return redirect('cliente_list')
+
+# LISTAR
+def devolucioncliente_list(request):
+    devoluciones = DevolucionCliente.objects.all().order_by('-id_devolucion_cliente')
+    return render(request, 'devolucioncliente/devolucion_list.html', {'devoluciones': devoluciones})
+
+
+# CREAR
+def devolucioncliente_create(request):
+    if request.method == 'POST':
+        form = DevolucionClienteForm(request.POST)
+
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    devolucion = form.save(commit=False)
+
+                    # (Opcional) Cálculo automático de precio total devuelto
+                    if devolucion.precio_devolucion and devolucion.cantidad_devuelta:
+                        devolucion.precio_devolucion = devolucion.precio_devolucion * devolucion.cantidad_devuelta
+
+                    devolucion.save()
+
+                messages.success(request, "Devolución registrada correctamente.")
+                return redirect('devolucion_list')
+
+            except Exception as e:
+                messages.error(request, f"Error al registrar la devolución: {e}")
+        else:
+            messages.error(request, "El formulario tiene errores.")
+    else:
+        form = DevolucionClienteForm()
+
+    return render(request, 'devolucioncliente/devolucion_form.html', {'form': form, 'titulo': 'Nueva Devolución'})
+
+
+# EDITAR
+def devolucioncliente_edit(request, pk):
+    devolucion = get_object_or_404(DevolucionCliente, pk=pk)
+
+    if request.method == 'POST':
+        form = DevolucionClienteForm(request.POST, instance=devolucion)
+
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    devolucion = form.save(commit=False)
+
+                    if devolucion.precio_devolucion and devolucion.cantidad_devuelta:
+                        devolucion.precio_devolucion = devolucion.precio_devolucion * devolucion.cantidad_devuelta
+
+                    devolucion.save()
+
+                messages.success(request, "Devolución actualizada correctamente.")
+                return redirect('devolucion_list')
+
+            except Exception as e:
+                messages.error(request, f"Error al actualizar la devolución: {e}")
+
+    else:
+        form = DevolucionClienteForm(instance=devolucion)
+
+    return render(request, 'devolucioncliente/devolucion_form.html', {'form': form, 'titulo': 'Editar Devolución'})
+
+
+# ELIMINAR
+def devolucioncliente_delete(request, pk):
+    devolucion = get_object_or_404(DevolucionCliente, pk=pk)
+
+    if request.method == 'POST':
+        devolucion.delete()
+        messages.success(request, "Devolución eliminada correctamente.")
+        return redirect('devolucion_list')
+
+    return render(request, 'devolucioncliente/devolucion_delete.html', {'devolucion': devolucion})
+
+# LISTA
+def devolucionproveedor_list(request):
+    devoluciones = DevolucionProveedor.objects.all().order_by('-id_devolucion')
+    return render(request, 'devolucionproveedor/devolucionprov_list.html', {
+        'devoluciones': devoluciones
+    })
+
+
+# CREAR
+def devolucionproveedor_create(request):
+    if request.method == 'POST':
+        form = DevolucionProveedorForm(request.POST)
+
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    devolucion = form.save()
+                messages.success(request, "Devolución de proveedor registrada correctamente.")
+                return redirect('devolucionprov_list')
+            except Exception as e:
+                messages.error(request, f"Error al registrar la devolución: {e}")
+        else:
+            messages.error(request, "El formulario contiene errores.")
+
+    else:
+        form = DevolucionProveedorForm()
+
+    return render(request, 'devolucionproveedor/devolucionprov_form.html', {
+        'form': form,
+        'titulo': 'Registrar Devolución a Proveedor'
+    })
+
+
+# EDITAR
+def devolucionproveedor_edit(request, pk):
+    devolucion = get_object_or_404(DevolucionProveedor, pk=pk)
+
+    if request.method == 'POST':
+        form = DevolucionProveedorForm(request.POST, instance=devolucion)
+
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+                messages.success(request, "Devolución actualizada correctamente.")
+                return redirect('devolucionprov_list')
+            except Exception as e:
+                messages.error(request, f"Error al actualizar la devolución: {e}")
+
+    else:
+        form = DevolucionProveedorForm(instance=devolucion)
+
+    return render(request, 'devolucionproveedor/devolucionprov_form.html', {
+        'form': form,
+        'titulo': 'Editar Devolución de Proveedor'
+    })
+
+
+# ELIMINAR
+def devolucionproveedor_delete(request, pk):
+    devolucion = get_object_or_404(DevolucionProveedor, pk=pk)
+
+    if request.method == 'POST':
+        devolucion.delete()
+        messages.success(request, "Devolución eliminada correctamente.")
+        return redirect('devolucionprov_list')
+
+    return render(request, 'devolucionproveedor/devolucionprov_delete.html', {
+        'devolucion': devolucion
+    })

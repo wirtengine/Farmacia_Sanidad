@@ -69,5 +69,16 @@ urlpatterns = [
     path('clientes/nuevo/', views.cliente_create, name='cliente_create'),      # Crear cliente
     path('clientes/editar/<int:pk>/', views.cliente_edit, name='cliente_edit'),# Editar cliente
     path('clientes/eliminar/<int:pk>/', views.cliente_delete, name='cliente_delete'), # Eliminar client
+    # CRUD DEVOLUCIONES
+    path('devoluciones/', views.devolucioncliente_list, name='devolucion_list'),
+    path('devoluciones/nueva/', views.devolucioncliente_create, name='devolucion_create'),
+    path('devoluciones/editar/<int:pk>/', views.devolucioncliente_edit, name='devolucion_edit'),
+    path('devoluciones/eliminar/<int:pk>/', views.devolucioncliente_delete, name='devolucion_delete'),
+    # CRUD DE DEVOLUCIONES A PROVEEDOR
+    path('devoluciones-proveedor/', views.devolucionproveedor_list, name='devolucionprov_list'),
+    path('devoluciones-proveedor/nueva/', views.devolucionproveedor_create, name='devolucionprov_create'),
+    path('devoluciones-proveedor/editar/<int:pk>/', views.devolucionproveedor_edit, name='devolucionprov_edit'),
+    path('devoluciones-proveedor/eliminar/<int:pk>/', views.devolucionproveedor_delete, name='devolucionprov_delete'),
+
 
 ]

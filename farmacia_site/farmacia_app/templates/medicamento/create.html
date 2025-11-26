@@ -3,370 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Medicamento - Farmacia Saludable</title>
+    <title>Registrar Medicamento - Farmacia Saludable</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --primary-color: #2c7fb8;
-            --secondary-color: #7fcdbb;
-            --accent-color: #edf8b1;
-            --dark-color: #253237;
-            --light-color: #f8f9fa;
+            --primary: #2c7fb8;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --card-bg: #ffffff;
+            --soft-bg: #f5f7fb;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: var(--soft-bg);
+            font-family: "Segoe UI", sans-serif;
         }
-        
-        .form-container {
-            max-width: 800px;
-            margin: 30px auto;
-            background-color: white;
+
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
+
+        .form-section {
+            background: var(--card-bg);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .form-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
             padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--primary);
         }
-        
-        .form-header h2 {
-            margin: 0;
+
+        .section-title {
+            font-size: 1.2rem;
             font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
-        
-        .form-body {
-            padding: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
+
         .form-label {
             font-weight: 600;
-            color: var(--dark-color);
-            margin-bottom: 8px;
+            color: var(--dark);
         }
-        
+
+        .input-group-text {
+            background: var(--primary);
+            border: none;
+            color: white;
+        }
+
         .form-control, .form-select {
-            border-radius: 8px;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            transition: all 0.3s;
+            border-radius: 10px;
+            padding: 12px;
         }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(44, 127, 184, 0.25);
-        }
-        
+
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
             padding: 12px 25px;
+            border-radius: 10px;
             font-weight: 600;
-            border-radius: 8px;
-            transition: all 0.3s;
+            background: var(--primary);
+            border: none;
         }
-        
+
         .btn-primary:hover {
-            background-color: #1e5a8a;
-            border-color: #1e5a8a;
-            transform: translateY(-2px);
+            background: #216492;
         }
-        
+
         .btn-secondary {
             padding: 12px 25px;
+            border-radius: 10px;
             font-weight: 600;
-            border-radius: 8px;
-            transition: all 0.3s;
         }
-        
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-        }
-        
-        .state-toggle {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        
+
         .state-option {
-            flex: 1;
-            text-align: center;
             padding: 12px;
+            border-radius: 10px;
             border: 2px solid #ddd;
-            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            background-color: #f8f9fa;
-        }
-        
-        .state-option.active {
-            border-color: var(--primary-color);
-            background-color: rgba(44, 127, 184, 0.1);
-            color: var(--primary-color);
+            transition: .3s;
+            text-align: center;
             font-weight: 600;
         }
-        
-        .state-option i {
-            margin-right: 5px;
+
+        .state-option:hover {
+            border-color: var(--primary);
         }
-        
-        .help-text {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-top: 5px;
+
+        .state-option.active {
+            background: rgba(44,127,184,0.15);
+            border-color: var(--primary);
+            color: var(--primary);
         }
-        
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 5px;
-        }
-        
-        .form-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        .required-field::after {
-            content: " *";
-            color: #dc3545;
-        }
-        
-        @media (max-width: 576px) {
-            .form-footer {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .state-toggle {
-                flex-direction: column;
-            }
-        }
+
     </style>
 </head>
+
 <body>
 
-<div class="form-container">
-    <div class="form-header">
-        <h2><i class="fas fa-pills"></i> Agregar Nuevo Medicamento</h2>
+<h2 class="page-title"><i class="fa-solid fa-capsules"></i> Registrar Nuevo Medicamento</h2>
+
+<div class="container mb-5">
+<form method="POST" id="medicamentoForm">
+    {% csrf_token %}
+
+    <!-- DATOS GENERALES -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información General</div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Nombre Genérico *</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-pills"></i></span>
+                    <input type="text" id="id_nombre_generico" required name="nombre_generico" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Código Laboratorio</label>
+                <input type="text" id="id_cod_laboratorio" name="cod_laboratorio" class="form-control">
+            </div>
+        </div>
     </div>
-    
-    <div class="form-body">
-        <form method="POST" id="medicamentoForm">
-            {% csrf_token %}
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_nombre_generico" class="form-label required-field">Nombre Genérico</label>
-                        <input type="text" class="form-control" id="id_nombre_generico" name="nombre_generico" required>
-                        <div class="help-text">Ingrese el nombre genérico del medicamento</div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_cod_laboratorio" class="form-label">Código Laboratorio</label>
-                        <input type="text" class="form-control" id="id_cod_laboratorio" name="cod_laboratorio">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_precio_unitario" class="form-label required-field">Precio Unitario</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" id="id_precio_unitario" name="precio_unitario" step="0.01" min="0" required>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_cantidad" class="form-label required-field">Cantidad</label>
-                        <input type="number" class="form-control" id="id_cantidad" name="cantidad" min="0" required>
-                    </div>
+
+    <!-- PRECIOS & STOCK -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-box-open"></i> Precio y Stock</div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Precio Unitario *</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" step="0.01" min="0" required name="precio_unitario" id="id_precio_unitario" class="form-control">
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_stock_minimo" class="form-label">Stock Mínimo</label>
-                        <input type="number" class="form-control" id="id_stock_minimo" name="stock_minimo" min="0" value="10">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_presentacion" class="form-label">Presentación</label>
-                        <input type="text" class="form-control" id="id_presentacion" name="presentacion">
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <label class="form-label">Cantidad *</label>
+                <input type="number" min="0" required name="cantidad" id="id_cantidad" class="form-control">
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_dosis" class="form-label">Dosis</label>
-                        <input type="text" class="form-control" id="id_dosis" name="dosis">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_via_administracion" class="form-label">Vía Administración</label>
-                        <input type="text" class="form-control" id="id_via_administracion" name="via_administracion">
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <label class="form-label">Stock Mínimo</label>
+                <input type="number" min="0" value="10" name="stock_minimo" id="id_stock_minimo" class="form-control">
             </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_registro_sanitario" class="form-label">Registro Sanitario</label>
-                        <input type="text" class="form-control" id="id_registro_sanitario" name="registro_sanitario">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="id_fecha_caducidad" class="form-label">Fecha Caducidad</label>
-                        <input type="date" class="form-control" id="id_fecha_caducidad" name="fecha_caducidad">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_contra_indicaciones" class="form-label">Contraindicaciones</label>
-                <textarea class="form-control" id="id_contra_indicaciones" name="contra_indicaciones" rows="3"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="id_precauciones" class="form-label">Precauciones</label>
-                <textarea class="form-control" id="id_precauciones" name="precauciones" rows="3"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label required-field">Estado</label>
-                <div class="state-toggle">
-                    <div class="state-option active" data-value="1">
-                        <i class="fas fa-check-circle"></i> Activo
-                    </div>
-                    <div class="state-option" data-value="0">
-                        <i class="fas fa-times-circle"></i> Inactivo
-                    </div>
-                </div>
-                <input type="hidden" id="id_estado" name="estado" value="1" required>
-                <div class="help-text">Seleccione el estado del medicamento en el inventario</div>
-                <div class="error-message" id="estado-error" style="display: none;">El estado solo puede ser Activo (1) o Inactivo (0)</div>
-            </div>
-
-            <div class="form-group">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="id_requiere_receta" name="requiere_receta">
-                    <label class="form-check-label" for="id_requiere_receta">Requiere Receta</label>
-                </div>
-            </div>
-            
-            <div class="form-footer">
-                <div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Medicamento
-                    </button>
-                </div>
-                <div>
-                    <a class="btn btn-secondary" href="{% url 'medicamento_list' %}">
-                        <i class="fas fa-arrow-left"></i> Regresar al Listado
-                    </a>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
+
+    <!-- PRESENTACIÓN -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-boxes-stacked"></i> Detalles del Medicamento</div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Presentación</label>
+                <input type="text" name="presentacion" id="id_presentacion" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Dosis</label>
+                <input type="text" name="dosis" id="id_dosis" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Vía Administración</label>
+                <input type="text" name="via_administracion" id="id_via_administracion" class="form-control">
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label class="form-label">Registro Sanitario</label>
+                <input type="text" id="id_registro_sanitario" name="registro_sanitario" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Fecha Caducidad</label>
+                <input type="date" id="id_fecha_caducidad" name="fecha_caducidad" class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <!-- DESCRIPCIONES -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-file-medical"></i> Indicaciones y Precauciones</div>
+
+        <label class="form-label">Contraindicaciones</label>
+        <textarea class="form-control" rows="3" name="contra_indicaciones" id="id_contra_indicaciones"></textarea>
+
+        <label class="form-label mt-3">Precauciones</label>
+        <textarea class="form-control" rows="3" name="precauciones" id="id_precauciones"></textarea>
+    </div>
+
+    <!-- ESTADO & RECETA -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-toggle-on"></i> Estado y Control</div>
+
+        <label class="form-label">Estado *</label>
+        <div class="row text-center mt-2">
+            <div class="col-md-6">
+                <div class="state-option active" data-value="1">
+                    <i class="fa-solid fa-check-circle"></i> Activo
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="state-option" data-value="0">
+                    <i class="fa-solid fa-times-circle"></i> Inactivo
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" id="id_estado" name="estado" value="1" required>
+
+        <div class="form-check form-switch mt-4">
+            <input class="form-check-input" type="checkbox" id="id_requiere_receta" name="requiere_receta">
+            <label class="form-check-label" for="id_requiere_receta">Requiere Receta</label>
+        </div>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="text-center mt-4">
+        <button class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Medicamento</button>
+        <a href="{% url 'medicamento_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Regresar</a>
+    </div>
+
+</form>
 </div>
 
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Toggle para el estado
-        const stateOptions = document.querySelectorAll('.state-option');
-        const estadoInput = document.getElementById('id_estado');
-        
-        stateOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                stateOptions.forEach(opt => opt.classList.remove('active'));
-                this.classList.add('active');
-                estadoInput.value = this.getAttribute('data-value');
-            });
-        });
-        
-        // Validación del formulario
-        const form = document.getElementById('medicamentoForm');
-        const estadoError = document.getElementById('estado-error');
-        
-        form.addEventListener('submit', function(e) {
-            let isValid = true;
-            
-            // Validar campos requeridos
-            const requiredFields = form.querySelectorAll('[required]');
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            });
-            
-            // Validación específica para el estado
-            if (estadoInput.value !== '0' && estadoInput.value !== '1') {
-                estadoError.style.display = 'block';
-                isValid = false;
-            } else {
-                estadoError.style.display = 'none';
-            }
-            
-            if (!isValid) {
-                e.preventDefault();
-                
-                // Mostrar mensaje de error general
-                if (!document.querySelector('.alert-danger')) {
-                    const errorAlert = document.createElement('div');
-                    errorAlert.className = 'alert alert-danger mt-3';
-                    errorAlert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, complete todos los campos requeridos y verifique los datos ingresados.';
-                    form.insertBefore(errorAlert, form.querySelector('.form-footer'));
-                }
-            }
-        });
-        
-        // Remover clases de error al escribir
-        const inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                if (this.value.trim()) {
-                    this.classList.remove('is-invalid');
-                }
-            });
+    // Toggle estado
+    document.querySelectorAll(".state-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            document.querySelectorAll(".state-option").forEach(x => x.classList.remove("active"));
+            opt.classList.add("active");
+            document.getElementById("id_estado").value = opt.dataset.value;
         });
     });
 </script>

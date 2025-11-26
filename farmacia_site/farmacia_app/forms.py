@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente
+from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente, DevolucionCliente, DevolucionProveedor
 from datetime import date
 
 
@@ -84,9 +84,11 @@ class ProveedorForm(forms.ModelForm):
 # FORMULARIOS DE MEDICAMENTOS
 # ========================
 class MedicamentoForm(forms.ModelForm):
+
     class Meta:
         model = Medicamento
         fields = '__all__'
+
         widgets = {
             'nombre_generico': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -146,53 +148,64 @@ class MedicamentoForm(forms.ModelForm):
             'requiere_receta': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
-            'estado': forms.Select(attrs={
-                'class': 'form-control'
-            }, choices=[(1, 'Activo'), (0, 'Inactivo')]),
+            'estado': forms.Select(
+                attrs={'class': 'form-control'}
+            ),
             'fecha_registro': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
             }),
         }
-    
+
+    # -----------------------------------------------------
+    # 🔹 Sobrescribir __init__ para volver campos opcionales
+    # -----------------------------------------------------
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hacer que algunos campos no sean requeridos
-        self.fields['id_factura_compra'].required = False
-        self.fields['fecha_caducidad'].required = False
-        self.fields['contra_indicaciones'].required = False
-        self.fields['dosis'].required = False
-        self.fields['cod_laboratorio'].required = False
-        self.fields['registro_sanitario'].required = False
-        self.fields['precauciones'].required = False
-        self.fields['presentacion'].required = False
-        self.fields['via_administracion'].required = False
-        self.fields['fecha_registro'].required = False
 
-    def clean_nombre_generico(self):
-        nombre_generico = self.cleaned_data.get('nombre_generico')
-        if nombre_generico:
-            # Verificar si ya existe un medicamento con el mismo nombre (case-insensitive)
-            medicamentos = Medicamento.objects.filter(nombre_generico__iexact=nombre_generico)
-            if self.instance and self.instance.pk:
-                # Si estamos editando, excluir el registro actual
-                medicamentos = medicamentos.exclude(pk=self.instance.pk)
-            if medicamentos.exists():
-                raise ValidationError('Ya existe un medicamento con este nombre genérico.')
-        return nombre_generico
+        opcionales = [
+            'id_factura_compra',
+            'fecha_caducidad',
+            'contra_indicaciones',
+            'dosis',
+            'cod_laboratorio',
+            'registro_sanitario',
+            'precauciones',
+            'presentacion',
+            'via_administracion',
+            'fecha_registro'
+        ]
 
+        for campo in opcionales:
+            self.fields[campo].required = False
+
+        # Forzar los choices reales del estado
+        self.fields['estado'].choices = [
+            (1, "Activo"),
+            (0, "Inactivo")
+        ]
+
+    # -----------------------------------------------------
+    # 🔹 Validación: registro sanitario debe ser único
+    # -----------------------------------------------------
     def clean_registro_sanitario(self):
         registro_sanitario = self.cleaned_data.get('registro_sanitario')
-        if registro_sanitario:
-            # Verificar si ya existe un medicamento con el mismo registro sanitario
-            medicamentos = Medicamento.objects.filter(registro_sanitario=registro_sanitario)
-            if self.instance and self.instance.pk:
-                # Si estamos editando, excluir el registro actual
-                medicamentos = medicamentos.exclude(pk=self.instance.pk)
-            if medicamentos.exists():
-                raise ValidationError('Ya existe un medicamento con este registro sanitario.')
-        return registro_sanitario
 
+        if registro_sanitario:
+            medicamentos = Medicamento.objects.filter(
+                registro_sanitario=registro_sanitario
+            )
+
+            # Si estamos editando, excluir el actual
+            if self.instance and self.instance.pk:
+                medicamentos = medicamentos.exclude(pk=self.instance.pk)
+
+            if medicamentos.exists():
+                raise ValidationError(
+                    'Ya existe un medicamento con este registro sanitario.'
+                )
+
+        return registro_sanitario
 # ========================
 # FORMULARIOS DE EMPLEADOS
 # ========================
@@ -587,3 +600,38 @@ class ClienteForm(forms.ModelForm):
         if fecha and fecha > date.today():
             raise ValidationError("La fecha no puede ser futura.")
         return fecha
+class DevolucionClienteForm(forms.ModelForm):
+    class Meta:
+        model = DevolucionCliente
+        fields = [
+            'motivo_devolucion',
+            'cantidad_devuelta',
+            'precio_devolucion',
+            'id_venta',
+            'id_medicamento',
+            'id_empleado',
+            'fecha',
+            'estado'
+        ]
+        widgets = {
+            'fecha': forms.DateInput(attrs={'type': 'date'}),
+            'motivo_devolucion': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class DevolucionProveedorForm(forms.ModelForm):
+    class Meta:
+        model = DevolucionProveedor
+        fields = [
+            'id_factura_compra',
+            'productos_devueltos',
+            'cantidad_devuelta',
+            'fecha_aprobacion',
+            'fecha_registro',
+            'estado',
+            'id_empleado',
+        ]
+        widgets = {
+            'fecha_aprobacion': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_registro': forms.DateInput(attrs={'type': 'date'}),
+            'productos_devueltos': forms.Textarea(attrs={'rows': 3}),
+        } 

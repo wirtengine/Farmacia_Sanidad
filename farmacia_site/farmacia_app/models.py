@@ -36,12 +36,18 @@ class FacturaCompra(models.Model):
 
 
 class Medicamento(models.Model):
+
+    ESTADOS = [
+        (1, 'Activo'),
+        (0, 'Inactivo'),
+    ]
+
     id_medicamento = models.AutoField(primary_key=True)
     id_factura_compra = models.ForeignKey(
-        FacturaCompra, 
-        on_delete=models.SET_NULL, 
+        FacturaCompra,
+        on_delete=models.SET_NULL,
         db_column='id_factura_compra',
-        blank=True, 
+        blank=True,
         null=True
     )
     nombre_generico = models.CharField(max_length=255)
@@ -57,7 +63,10 @@ class Medicamento(models.Model):
     stock_minimo = models.IntegerField(default=10)
     via_administracion = models.CharField(max_length=100, blank=True, null=True)
     requiere_receta = models.BooleanField(default=False)
-    estado = models.IntegerField(default=1)
+
+    
+    estado = models.IntegerField(choices=ESTADOS, default=1)
+
     fecha_registro = models.DateField(blank=True, null=True)
 
     class Meta:
