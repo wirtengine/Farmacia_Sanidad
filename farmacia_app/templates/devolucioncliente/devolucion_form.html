@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>{{ titulo }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            {% for field in form %}
+            <div class="col-6 mb-3">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% for e in field.errors %}
+                <p class="text-danger small">{{ e }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="btn btn-success">Guardar</button>
+        <a href="{% url 'devolucion_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+{% endblock %}

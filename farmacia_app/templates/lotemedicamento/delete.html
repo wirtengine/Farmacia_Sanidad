@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Eliminar Asignación</h2>
+
+<p>¿Seguro que deseas eliminar el registro del lote <strong>{{ lote.id_lote.codigo_lote }}</strong> y medicamento <strong>{{ lote.id_medicamento.nombre_generico }}</strong>?</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{% url 'lotemedicamento_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}

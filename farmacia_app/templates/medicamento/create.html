@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Medicamento - Farmacia Saludable</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2c7fb8;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --card-bg: #ffffff;
+            --soft-bg: #f5f7fb;
+        }
+
+        body {
+            background: var(--soft-bg);
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
+
+        .form-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--primary);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .input-group-text {
+            background: var(--primary);
+            border: none;
+            color: white;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .btn-primary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--primary);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #216492;
+        }
+
+        .btn-secondary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .state-option {
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: .3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .state-option:hover {
+            border-color: var(--primary);
+        }
+
+        .state-option.active {
+            background: rgba(44,127,184,0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h2 class="page-title"><i class="fa-solid fa-capsules"></i> Registrar Nuevo Medicamento</h2>
+
+<div class="container mb-5">
+<form method="POST" id="medicamentoForm">
+    {% csrf_token %}
+
+    <!-- DATOS GENERALES -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información General</div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Nombre Genérico *</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-pills"></i></span>
+                    <input type="text" id="id_nombre_generico" required name="nombre_generico" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Código Laboratorio</label>
+                <input type="text" id="id_cod_laboratorio" name="cod_laboratorio" class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <!-- PRECIOS & STOCK -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-box-open"></i> Precio y Stock</div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Precio Unitario *</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" step="0.01" min="0" required name="precio_unitario" id="id_precio_unitario" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Cantidad *</label>
+                <input type="number" min="0" required name="cantidad" id="id_cantidad" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Stock Mínimo</label>
+                <input type="number" min="0" value="10" name="stock_minimo" id="id_stock_minimo" class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <!-- PRESENTACIÓN -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-boxes-stacked"></i> Detalles del Medicamento</div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Presentación</label>
+                <input type="text" name="presentacion" id="id_presentacion" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Dosis</label>
+                <input type="text" name="dosis" id="id_dosis" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Vía Administración</label>
+                <input type="text" name="via_administracion" id="id_via_administracion" class="form-control">
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label class="form-label">Registro Sanitario</label>
+                <input type="text" id="id_registro_sanitario" name="registro_sanitario" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Fecha Caducidad</label>
+                <input type="date" id="id_fecha_caducidad" name="fecha_caducidad" class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <!-- DESCRIPCIONES -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-file-medical"></i> Indicaciones y Precauciones</div>
+
+        <label class="form-label">Contraindicaciones</label>
+        <textarea class="form-control" rows="3" name="contra_indicaciones" id="id_contra_indicaciones"></textarea>
+
+        <label class="form-label mt-3">Precauciones</label>
+        <textarea class="form-control" rows="3" name="precauciones" id="id_precauciones"></textarea>
+    </div>
+
+    <!-- ESTADO & RECETA -->
+    <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-toggle-on"></i> Estado y Control</div>
+
+        <label class="form-label">Estado *</label>
+        <div class="row text-center mt-2">
+            <div class="col-md-6">
+                <div class="state-option active" data-value="1">
+                    <i class="fa-solid fa-check-circle"></i> Activo
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="state-option" data-value="0">
+                    <i class="fa-solid fa-times-circle"></i> Inactivo
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" id="id_estado" name="estado" value="1" required>
+
+        <div class="form-check form-switch mt-4">
+            <input class="form-check-input" type="checkbox" id="id_requiere_receta" name="requiere_receta">
+            <label class="form-check-label" for="id_requiere_receta">Requiere Receta</label>
+        </div>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="text-center mt-4">
+        <button class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Medicamento</button>
+        <a href="{% url 'medicamento_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Regresar</a>
+    </div>
+
+</form>
+</div>
+
+
+<script>
+    // Toggle estado
+    document.querySelectorAll(".state-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            document.querySelectorAll(".state-option").forEach(x => x.classList.remove("active"));
+            opt.classList.add("active");
+            document.getElementById("id_estado").value = opt.dataset.value;
+        });
+    });
+</script>
+
+</body>
+</html>

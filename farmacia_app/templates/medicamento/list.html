@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medicamentos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+
+<h2 class="mb-3">Listado de Medicamentos</h2>
+
+<a href="{% url 'medicamento_create' %}" class="btn btn-primary mb-3">Agregar Medicamento</a>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Nombre Genérico</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for m in medicamentos %}
+    <tr>
+        <td>{{ m.id_medicamento }}</td>
+        <td>{{ m.nombre_generico }}</td>
+        <td>{{ m.cantidad }}</td>
+        <td>{{ m.precio_unitario }}</td>
+        <td>
+            <a href="{% url 'medicamento_edit' m.id_medicamento %}" class="btn btn-warning btn-sm">Editar</a>
+            <a href="{% url 'medicamento_delete' m.id_medicamento %}" class="btn btn-danger btn-sm">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

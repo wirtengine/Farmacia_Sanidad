@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ titulo }}</title>
+    <style>
+        .errors { color: red; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 8px; }
+    </style>
+</head>
+<body>
+    <h1>{{ titulo }}</h1>
+
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Mostrar errores del formulario -->
+    {% if form.errors %}
+        <div class="errors">
+            <strong>Por favor corrige los errores:</strong>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Mostrar campos manualmente para mejor control -->
+        <div class="form-group">
+            <label for="id_nombre">Nombre:</label>
+            {{ form.nombre }}
+            {% if form.nombre.errors %}
+                <div class="errors">{{ form.nombre.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_cedula">Cédula:</label>
+            {{ form.cedula }}
+            {% if form.cedula.errors %}
+                <div class="errors">{{ form.cedula.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_telefono">Teléfono:</label>
+            {{ form.telefono }}
+            {% if form.telefono.errors %}
+                <div class="errors">{{ form.telefono.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_correo">Correo:</label>
+            {{ form.correo }}
+            {% if form.correo.errors %}
+                <div class="errors">{{ form.correo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_direccion">Dirección:</label>
+            {{ form.direccion }}
+            {% if form.direccion.errors %}
+                <div class="errors">{{ form.direccion.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_fecha_registro">Fecha Registro:</label>
+            {{ form.fecha_registro }}
+            {% if form.fecha_registro.errors %}
+                <div class="errors">{{ form.fecha_registro.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit">Guardar</button>
+        <a href="{% url 'cliente_list' %}">Volver a la lista</a>
+    </form>
+</body>
+</html>

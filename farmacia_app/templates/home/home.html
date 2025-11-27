@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario - Farmacia Sanidad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #9b59b6;
+            --warning-color: #e74c3c;
+            --info-color: #1abc9c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --factura-color: #f39c12;
+            --lotemed-color: #d35400;
+            --cliente-color: #8e44ad;
+            --devolucion-color: #c0392b;
+            --devolucionprov-color: #16a085;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(44, 62, 80, 0.85), rgba(44, 62, 80, 0.9)), 
+                        url('https://images.unsplash.com/photo-1585435557343-3b092031d5ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .navbar {
+            background-color: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        .user-name {
+            color: white;
+            font-weight: 500;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn-rol {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border: none;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-right: 15px;
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-logout {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            border: none;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-logout:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+            color: white;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .welcome-section h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .welcome-section p {
+            font-size: 1.3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .panels-section {
+            margin-bottom: 3rem;
+        }
+        
+        .panel-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            height: 100%;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .panel-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        }
+        
+        .panel-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        
+        .panel-icon {
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        .panel-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .panel-card p {
+            margin-bottom: 1.2rem;
+            opacity: 0.85;
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+        
+        .btn-panel {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 7px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.8rem;
+        }
+        
+        .btn-panel:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            color: white;
+        }
+        
+        /* Colores específicos para cada panel */
+        .panel-medicamento .panel-icon {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-proveedor .panel-icon {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-empleado .panel-icon {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-cliente .panel-icon {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-venta .panel-icon {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-lote .panel-icon {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-factura .panel-icon {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-lotemed .panel-icon {
+            background: linear-gradient(135deg, #d35400, #e74c3c);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-devolucion .panel-icon {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            -webkit-background-clip: text;
+        }
+        
+        .panel-devolucionprov .panel-icon {
+            background: linear-gradient(135deg, #16a085, #1abc9c);
+            -webkit-background-clip: text;
+        }
+        
+        footer {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 25px 0;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+            margin: 0 10px;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .social-icons a {
+            color: white;
+            font-size: 1.3rem;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .social-icons a:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        /* Mejoras en la distribución de paneles */
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .panel-icon {
+                font-size: 2.5rem;
+            }
+            
+            .panel-card h3 {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .welcome-section h1 {
+                font-size: 2.5rem;
+            }
+            
+            .panel-card {
+                margin-bottom: 20px;
+            }
+            
+            .navbar-nav {
+                text-align: center;
+                padding: 10px 0;
+            }
+            
+            .user-name, .btn-rol, .btn-logout {
+                margin: 5px 0;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .welcome-section h1 {
+                font-size: 2.2rem;
+            }
+            
+            .welcome-section p {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}" onclick="location.reload()">
+                <i class="fas fa-clinic-medical me-2"></i>Farmacia Sanidad
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Nombre del usuario -->
+                    <li class="nav-item">
+                        <span class="user-name">
+                            <i class="fas fa-user me-1"></i>
+                            {% if user.get_full_name %}
+                                {{ user.get_full_name }}
+                            {% else %}
+                                {{ user.username }}
+                            {% endif %}
+                        </span>
+                    </li>
+                    
+                    <!-- Botón del rol -->
+                    <li class="nav-item">
+                        <button class="btn btn-rol" disabled>
+                            <i class="fas fa-user-tag me-1"></i>
+                            {{ rol|default:"Usuario" }}
+                        </button>
+                    </li>
+                    
+                    <!-- Botón de cerrar sesión -->
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="btn btn-logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="container">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h1>Sistema de Inventario</h1>
+                <p>Gestiona de manera eficiente el inventario de medicamentos, proveedores, empleados, clientes, ventas, lotes, facturas de compra, lotes de medicamentos y devoluciones</p>
+            </div>
+            
+            <!-- Panels Section -->
+            <div class="panels-section">
+                <div class="panel-grid">
+                    <!-- Medicamento -->
+                    <div class="panel-card panel-medicamento">
+                        <div class="panel-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <h3>Medicamentos</h3>
+                        <p>Gestiona el inventario de medicamentos, precios y existencias</p>
+                        <a href="{% url 'medicamento_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Proveedor -->
+                    <div class="panel-card panel-proveedor">
+                        <div class="panel-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h3>Proveedores</h3>
+                        <p>Administra la información de proveedores y contactos</p>
+                        <a href="{% url 'proveedor_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Empleado -->
+                    <div class="panel-card panel-empleado">
+                        <div class="panel-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Empleados</h3>
+                        <p>Gestiona la información del personal y permisos</p>
+                        <a href="{% url 'empleado_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Cliente -->
+                    <div class="panel-card panel-cliente">
+                        <div class="panel-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3>Clientes</h3>
+                        <p>Administra la base de datos de clientes y historial</p>
+                        <a href="{% url 'cliente_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Venta -->
+                    <div class="panel-card panel-venta">
+                        <div class="panel-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h3>Ventas</h3>
+                        <p>Registra ventas y consulta historial de transacciones</p>
+                        <a href="{% url 'venta_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Lote -->
+                    <div class="panel-card panel-lote">
+                        <div class="panel-icon">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <h3>Lotes</h3>
+                        <p>Controla lotes y fechas de vencimiento de productos</p>
+                        <a href="{% url 'lote_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Factura de Compra -->
+                    <div class="panel-card panel-factura">
+                        <div class="panel-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <h3>Facturas Compra</h3>
+                        <p>Gestiona facturas de compra a proveedores</p>
+                        <a href="{% url 'facturacompra_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Lote Medicamento -->
+                    <div class="panel-card panel-lotemed">
+                        <div class="panel-icon">
+                            <i class="fas fa-capsules"></i>
+                        </div>
+                        <h3>Lote Medicamento</h3>
+                        <p>Gestiona relación entre lotes y medicamentos</p>
+                        <a href="{% url 'lotemedicamento_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Devolución Cliente -->
+                    <div class="panel-card panel-devolucion">
+                        <div class="panel-icon">
+                            <i class="fas fa-undo-alt"></i>
+                        </div>
+                        <h3>Devolución Cliente</h3>
+                        <p>Gestiona devoluciones de clientes y reembolsos</p>
+                        <a href="{% url 'devolucion_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                    
+                    <!-- Devolución Proveedor -->
+                    <div class="panel-card panel-devolucionprov">
+                        <div class="panel-icon">
+                            <i class="fas fa-arrow-left"></i>
+                        </div>
+                        <h3>Devolución Proveedor</h3>
+                        <p>Gestiona devoluciones a proveedores</p>
+                        <a href="{% url 'devolucionprov_list' %}" class="btn btn-panel">Acceder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2024 Farmacia Sanidad. Todos los derechos reservados.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Función para recargar la página al hacer clic en el logo
+        document.querySelector('.navbar-brand').addEventListener('click', function(e) {
+            e.preventDefault();
+            location.reload();
+        });
+    </script>
+</body>
+</html>
