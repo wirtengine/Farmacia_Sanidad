@@ -1,10 +1,713 @@
-<h1>Crear Lote</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Lote - Sistema Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --light: #f5f7fb;
+            --success: #28a745;
+            --accent: #ffb74d;
+            --danger: #dc3545;
+        }
 
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
+        body {
+            background: var(--light);
+            font-family: "Segoe UI", sans-serif;
+            padding-bottom: 30px;
+        }
 
-    <button type="submit">Guardar</button>
-</form>
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
 
-<a href="{% url 'lote_list' %}">Volver</a>
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .input-group-text {
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .btn-accent {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .btn-accent:hover {
+            background: #ffa726;
+            transform: translateY(-2px);
+            color: #333;
+        }
+
+        .btn-success {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--success);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-list {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-list:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .state-option {
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: .3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .state-option:hover {
+            border-color: var(--accent);
+        }
+
+        .state-option.active {
+            background: rgba(255, 183, 77, 0.15);
+            border-color: var(--accent);
+            color: #333;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .current-info {
+            background-color: #fff5e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            background-color: var(--accent);
+            color: #333;
+        }
+
+        .progress-step.completed {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .expiry-warning {
+            background-color: #fff3e0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        @media (max-width: 768px) {
+            .btn-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mb-5">
+    <h2 class="page-title"><i class="fa-solid fa-boxes"></i> Crear Nuevo Lote</h2>
+
+    <!-- Alertas -->
+    <div class="alert alert-info alert-custom">
+        <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa todos los campos obligatorios para registrar el lote correctamente.
+    </div>
+
+    <!-- Mostrar errores del formulario Django -->
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <strong>Errores en el formulario:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ field }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Indicador de progreso -->
+    <div class="progress-indicator">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+    </div>
+
+    <form method="POST" id="loteForm">
+        {% csrf_token %}
+
+        <!-- Paso 1: Información Básica -->
+        <div class="step-content active" id="step1">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información Básica</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Número de Lote</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                            <input type="text" id="id_numero_lote" name="numero_lote" class="form-control" 
+                                   placeholder="Ej: LOTE-2024-001" required>
+                        </div>
+                        {% if form.numero_lote.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.numero_lote.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Medicamento</label>
+                        <select class="form-select" id="id_id_medicamento" name="id_medicamento" required>
+                            <option value="">Selecciona un medicamento</option>
+                            {% for medicamento in medicamentos %}
+                                <option value="{{ medicamento.id_medicamento }}">
+                                    {{ medicamento.nombre_generico }} - {{ medicamento.presentacion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.id_medicamento.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.id_medicamento.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Cantidad</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-cubes"></i></span>
+                            <input type="number" id="id_cantidad" name="cantidad" class="form-control" 
+                                   min="1" value="1" required>
+                        </div>
+                        {% if form.cantidad.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.cantidad.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'lote_list' %}" class="btn btn-list">
+                    <i class="fas fa-list"></i> Ver Lista de Lotes
+                </a>
+                <button type="button" class="btn btn-accent next-step" data-next="2">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 2: Fechas y Estado -->
+        <div class="step-content" id="step2">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-calendar-alt"></i> Fechas y Estado</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Fecha de Fabricación</label>
+                        <input type="date" id="id_fecha_fabricacion" name="fecha_fabricacion" class="form-control" 
+                               required>
+                        {% if form.fecha_fabricacion.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.fecha_fabricacion.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Fecha de Vencimiento</label>
+                        <input type="date" id="id_fecha_vencimiento" name="fecha_vencimiento" class="form-control" 
+                               required>
+                        {% if form.fecha_vencimiento.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.fecha_vencimiento.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="vencimiento-alerta" class="expiry-warning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    <strong>Advertencia:</strong> Este lote vencerá en menos de 6 meses.
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label required">Estado del Lote</label>
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-2">
+                            <div class="state-option active" data-value="Activo">
+                                <i class="fa-solid fa-check-circle"></i> Activo
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="state-option" data-value="Inactivo">
+                                <i class="fa-solid fa-times-circle"></i> Inactivo
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="state-option" data-value="Por Vencer">
+                                <i class="fa-solid fa-clock"></i> Por Vencer
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="id_estado" name="estado" value="Activo" required>
+                    {% if form.estado.errors %}
+                    <div class="error-message" style="display: block;">
+                        {% for error in form.estado.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'lote_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="button" class="btn btn-accent next-step" data-next="3">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 3: Confirmación -->
+        <div class="step-content" id="step3">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-check-circle"></i> Confirmación</div>
+
+                <div class="alert alert-success alert-custom">
+                    <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar el lote.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Información Básica</h5>
+                        <p><strong>Número de Lote:</strong> <span id="summary-numero">-</span></p>
+                        <p><strong>Medicamento:</strong> <span id="summary-medicamento">-</span></p>
+                        <p><strong>Cantidad:</strong> <span id="summary-cantidad">-</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Fechas y Estado</h5>
+                        <p><strong>Fabricación:</strong> <span id="summary-fabricacion">-</span></p>
+                        <p><strong>Vencimiento:</strong> <span id="summary-vencimiento">-</span></p>
+                        <p><strong>Estado:</strong> <span id="summary-estado">-</span></p>
+                    </div>
+                </div>
+
+                <div class="mt-4" id="summary-alerta" style="display: none;">
+                    <div class="expiry-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Nota:</strong> Este lote está próximo a vencer.
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'lote_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-save"></i> Crear Lote
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Navegación por pasos
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const nextStep = this.getAttribute('data-next');
+            
+            // Validar campos obligatorios antes de avanzar
+            if (validateStep(currentStep)) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + nextStep).classList.add('active');
+                
+                updateProgressIndicator(currentStep, nextStep);
+                updateSummary();
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const prevStep = this.getAttribute('data-prev');
+            
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + prevStep).classList.add('active');
+            
+            updateProgressIndicator(currentStep, prevStep, true);
+        });
+    });
+
+    function updateProgressIndicator(from, to, isBack = false) {
+        const fromStep = document.querySelector(`.progress-step[data-step="${from}"]`);
+        const toStep = document.querySelector(`.progress-step[data-step="${to}"]`);
+        
+        if (isBack) {
+            fromStep.classList.remove('active', 'completed');
+            toStep.classList.add('active');
+        } else {
+            fromStep.classList.remove('active');
+            fromStep.classList.add('completed');
+            toStep.classList.add('active');
+        }
+    }
+
+    // Toggle estado
+    document.querySelectorAll(".state-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            document.querySelectorAll(".state-option").forEach(x => x.classList.remove("active"));
+            opt.classList.add("active");
+            document.getElementById("id_estado").value = opt.dataset.value;
+            updateSummary();
+        });
+    });
+
+    // Validación de vencimiento
+    document.getElementById('id_fecha_vencimiento').addEventListener('change', function() {
+        validarVencimiento();
+    });
+
+    function validarVencimiento() {
+        const fechaVencimiento = new Date(document.getElementById('id_fecha_vencimiento').value);
+        const hoy = new Date();
+        const seisMeses = new Date();
+        seisMeses.setMonth(hoy.getMonth() + 6);
+        
+        if (fechaVencimiento <= seisMeses) {
+            document.getElementById('vencimiento-alerta').style.display = 'block';
+        } else {
+            document.getElementById('vencimiento-alerta').style.display = 'none';
+        }
+    }
+
+    // Validación de pasos
+    function validateStep(step) {
+        let isValid = true;
+        
+        if (step === '1') {
+            const numeroLote = document.getElementById('id_numero_lote');
+            const medicamento = document.getElementById('id_id_medicamento');
+            const cantidad = document.getElementById('id_cantidad');
+            
+            if (!numeroLote.value.trim()) {
+                showError(numeroLote, 'El número de lote es obligatorio');
+                isValid = false;
+            } else {
+                hideError(numeroLote);
+            }
+            
+            if (!medicamento.value) {
+                showError(medicamento, 'Selecciona un medicamento');
+                isValid = false;
+            } else {
+                hideError(medicamento);
+            }
+            
+            if (!cantidad.value || parseInt(cantidad.value) < 1) {
+                showError(cantidad, 'La cantidad debe ser al menos 1');
+                isValid = false;
+            } else {
+                hideError(cantidad);
+            }
+        } else if (step === '2') {
+            const fabricacion = document.getElementById('id_fecha_fabricacion');
+            const vencimiento = document.getElementById('id_fecha_vencimiento');
+            
+            if (!fabricacion.value) {
+                showError(fabricacion, 'La fecha de fabricación es obligatoria');
+                isValid = false;
+            } else {
+                hideError(fabricacion);
+            }
+            
+            if (!vencimiento.value) {
+                showError(vencimiento, 'La fecha de vencimiento es obligatoria');
+                isValid = false;
+            } else {
+                // Validar que vencimiento sea posterior a fabricación
+                const fechaFabricacion = new Date(fabricacion.value);
+                const fechaVencimiento = new Date(vencimiento.value);
+                
+                if (fechaVencimiento <= fechaFabricacion) {
+                    showError(vencimiento, 'La fecha de vencimiento debe ser posterior a la fecha de fabricación');
+                    isValid = false;
+                } else {
+                    hideError(vencimiento);
+                }
+            }
+        }
+        
+        return isValid;
+    }
+
+    // Mostrar mensaje de error
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        let errorElement = document.getElementById(field.id + '-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.id = field.id + '-error';
+            errorElement.className = 'error-message';
+            field.parentNode.appendChild(errorElement);
+        }
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    // Ocultar mensaje de error
+    function hideError(field) {
+        field.classList.remove('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    // Actualizar resumen
+    function updateSummary() {
+        // Información básica
+        document.getElementById('summary-numero').textContent = 
+            document.getElementById('id_numero_lote').value || '-';
+        
+        const medicamentoSelect = document.getElementById('id_id_medicamento');
+        document.getElementById('summary-medicamento').textContent = 
+            medicamentoSelect.options[medicamentoSelect.selectedIndex].text || '-';
+        
+        document.getElementById('summary-cantidad').textContent = 
+            document.getElementById('id_cantidad').value || '-';
+        
+        // Fechas y estado
+        document.getElementById('summary-fabricacion').textContent = 
+            document.getElementById('id_fecha_fabricacion').value || '-';
+        
+        document.getElementById('summary-vencimiento').textContent = 
+            document.getElementById('id_fecha_vencimiento').value || '-';
+        
+        document.getElementById('summary-estado').textContent = 
+            document.getElementById('id_estado').value || '-';
+        
+        // Mostrar alerta si el lote está próximo a vencer
+        const fechaVencimiento = new Date(document.getElementById('id_fecha_vencimiento').value);
+        const hoy = new Date();
+        const seisMeses = new Date();
+        seisMeses.setMonth(hoy.getMonth() + 6);
+        
+        if (fechaVencimiento <= seisMeses) {
+            document.getElementById('summary-alerta').style.display = 'block';
+        } else {
+            document.getElementById('summary-alerta').style.display = 'none';
+        }
+    }
+
+    // Validación del formulario
+    document.getElementById('loteForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validar todos los pasos
+        if (!validateStep('1') || !validateStep('2')) {
+            isValid = false;
+            // Ir al paso 1 para mostrar errores
+            document.querySelectorAll('.step-content').forEach(step => step.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+            updateProgressIndicator('3', '1', true);
+            
+            // Mostrar mensaje de error general
+            if (!document.querySelector('.alert-danger:not(.alert-custom)')) {
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, complete todos los campos obligatorios correctamente.';
+                this.querySelector('.form-section').insertBefore(errorAlert, this.querySelector('.btn-container'));
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+    // Inicializar fecha de fabricación con fecha actual
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('id_fecha_fabricacion').value = today;
+        
+        // Establecer vencimiento por defecto (1 año después)
+        const nextYear = new Date();
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        document.getElementById('id_fecha_vencimiento').value = nextYear.toISOString().split('T')[0];
+    });
+</script>
+
+</body>
+</html>

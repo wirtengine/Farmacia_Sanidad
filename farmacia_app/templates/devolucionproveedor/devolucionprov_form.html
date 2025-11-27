@@ -1,27 +1,772 @@
-{% extends 'base.html' %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }} - Sistema Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --light: #f5f7fb;
+            --success: #28a745;
+            --accent: #ffb74d;
+            --danger: #dc3545;
+        }
 
-<div class="container mt-4">
-    <h2>{{ titulo }}</h2>
+        body {
+            background: var(--light);
+            font-family: "Segoe UI", sans-serif;
+            padding-bottom: 30px;
+        }
 
-    <form method="post">
-        {% csrf_token %}
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
 
-        <div class="row">
-            {% for field in form %}
-            <div class="col-md-6 mb-3">
-                <label>{{ field.label }}</label>
-                {{ field }}
-                {% for e in field.errors %}
-                    <p class="text-danger small">{{ e }}</p>
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .input-group-text {
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .btn-accent {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .btn-accent:hover {
+            background: #ffa726;
+            transform: translateY(-2px);
+            color: #333;
+        }
+
+        .btn-success {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--success);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-list {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-list:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .state-option {
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: .3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .state-option:hover {
+            border-color: var(--accent);
+        }
+
+        .state-option.active {
+            background: rgba(255, 183, 77, 0.15);
+            border-color: var(--accent);
+            color: #333;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .current-info {
+            background-color: #fff5e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            background-color: var(--accent);
+            color: #333;
+        }
+
+        .progress-step.completed {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .summary-total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .btn-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mb-5">
+    <h2 class="page-title">
+        <i class="fa-solid {% if titulo == 'Registrar Devolución a Proveedor' %}fa-plus-circle{% else %}fa-edit{% endif %}"></i> 
+        {{ titulo }}
+    </h2>
+
+    {% if devolucion and titulo == 'Editar Devolución a Proveedor' %}
+    <!-- Información actual de la devolución -->
+    <div class="current-info">
+        <h5><i class="fas fa-info-circle"></i> Editando: <strong>Devolución #{{ devolucion.id_devolucion }}</strong></h5>
+        <p class="mb-0">Factura: {{ devolucion.id_factura_compra.numero_factura|default:devolucion.id_factura_compra }} | Productos: {{ devolucion.productos_devueltos|truncatechars:50 }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Indicador de progreso -->
+    <div class="progress-indicator">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-info alert-custom">
+        <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa todos los campos obligatorios para registrar la devolución correctamente.
+    </div>
+
+    <!-- Mostrar errores del formulario Django -->
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <strong>Errores en el formulario:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ field }}: {{ error }}</li>
                 {% endfor %}
-            </div>
             {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" id="devolucionForm">
+        {% csrf_token %}
+        
+        <!-- Paso 1: Información Básica -->
+        <div class="step-content active" id="step1">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información Básica</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Factura de Compra</label>
+                        <select class="form-select" id="id_id_factura_compra" name="id_factura_compra" required>
+                            <option value="">Selecciona una factura</option>
+                            {% for factura in facturas %}
+                                <option value="{{ factura.id_factura_compra }}" 
+                                        {% if devolucion and devolucion.id_factura_compra.id_factura_compra == factura.id_factura_compra %}selected{% endif %}>
+                                    Factura #{{ factura.numero_factura }} - {{ factura.id_proveedor.nombre_contacto|default:factura.id_proveedor }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.id_factura_compra.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.id_factura_compra.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Cantidad Devuelta</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-box"></i></span>
+                            <input type="number" id="id_cantidad_devuelta" name="cantidad_devuelta" class="form-control" 
+                                   value="{% if devolucion %}{{ devolucion.cantidad_devuelta }}{% else %}{{ form.cantidad_devuelta.value|default:'1' }}{% endif %}" 
+                                   min="1" required>
+                        </div>
+                        {% if form.cantidad_devuelta.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.cantidad_devuelta.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_productos_devueltos" class="form-label required">Productos Devueltos</label>
+                    <textarea class="form-control" id="id_productos_devueltos" name="productos_devueltos" rows="3" 
+                              placeholder="Describe los productos que se devuelven al proveedor" required>{% if devolucion %}{{ devolucion.productos_devueltos|default:'' }}{% else %}{{ form.productos_devueltos.value|default:'' }}{% endif %}</textarea>
+                    {% if form.productos_devueltos.errors %}
+                    <div class="error-message" style="display: block;">
+                        {% for error in form.productos_devueltos.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'devolucionprov_list' %}" class="btn btn-list">
+                    <i class="fas fa-list"></i> Ver Lista de Devoluciones
+                </a>
+                <button type="button" class="btn btn-accent next-step" data-next="2">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
         </div>
 
-        <button class="btn btn-success">Guardar</button>
-        <a href="{% url 'devolucionprov_list' %}" class="btn btn-secondary">Cancelar</a>
+        <!-- Paso 2: Fechas y Estado -->
+        <div class="step-content" id="step2">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-calendar-alt"></i> Fechas y Estado</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Fecha de Registro</label>
+                        <input type="date" id="id_fecha_registro" name="fecha_registro" class="form-control" 
+                               value="{% if devolucion %}{{ devolucion.fecha_registro|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" required>
+                        {% if form.fecha_registro.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.fecha_registro.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha de Aprobación</label>
+                        <input type="date" id="id_fecha_aprobacion" name="fecha_aprobacion" class="form-control" 
+                               value="{% if devolucion %}{{ devolucion.fecha_aprobacion|date:'Y-m-d' }}{% else %}{{ form.fecha_aprobacion.value|default:'' }}{% endif %}">
+                        {% if form.fecha_aprobacion.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.fecha_aprobacion.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Empleado</label>
+                        <select class="form-select" id="id_id_empleado" name="id_empleado" required>
+                            <option value="">Selecciona un empleado</option>
+                            {% for empleado in empleados %}
+                                <option value="{{ empleado.id_empleado }}" 
+                                        {% if devolucion and devolucion.id_empleado.id_empleado == empleado.id_empleado %}selected{% endif %}>
+                                    {{ empleado.nombre }} {{ empleado.apellido }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.id_empleado.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.id_empleado.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Estado</label>
+                        <div class="row text-center">
+                            <div class="col-md-4 mb-2">
+                                <div class="state-option {% if devolucion.estado == 'Pendiente' or not devolucion %}active{% endif %}" data-value="Pendiente">
+                                    <i class="fa-solid fa-clock"></i> Pendiente
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="state-option {% if devolucion.estado == 'Aprobada' %}active{% endif %}" data-value="Aprobada">
+                                    <i class="fa-solid fa-check-circle"></i> Aprobada
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="state-option {% if devolucion.estado == 'Rechazada' %}active{% endif %}" data-value="Rechazada">
+                                    <i class="fa-solid fa-times-circle"></i> Rechazada
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="id_estado" name="estado" value="{% if devolucion %}{{ devolucion.estado }}{% else %}Pendiente{% endif %}" required>
+                        {% if form.estado.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.estado.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'devolucionprov_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="button" class="btn btn-accent next-step" data-next="3">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 3: Confirmación -->
+        <div class="step-content" id="step3">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-check-circle"></i> Confirmación</div>
+
+                <div class="alert alert-success alert-custom">
+                    <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar la devolución.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Información Básica</h5>
+                        <p><strong>Factura de Compra:</strong> <span id="summary-factura">-</span></p>
+                        <p><strong>Productos Devueltos:</strong> <span id="summary-productos">-</span></p>
+                        <p><strong>Cantidad:</strong> <span id="summary-cantidad">-</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Detalles</h5>
+                        <p><strong>Fecha Registro:</strong> <span id="summary-fecha-registro">-</span></p>
+                        <p><strong>Fecha Aprobación:</strong> <span id="summary-fecha-aprobacion">-</span></p>
+                        <p><strong>Empleado:</strong> <span id="summary-empleado">-</span></p>
+                        <p><strong>Estado:</strong> <span id="summary-estado">-</span></p>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h5 class="section-title mb-3"><i class="fa-solid fa-receipt"></i> Resumen Final</h5>
+                    <div class="summary-row">
+                        <span>Factura de Compra:</span>
+                        <span id="final-factura">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Productos Devueltos:</span>
+                        <span id="final-productos">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Cantidad:</span>
+                        <span id="final-cantidad">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Fecha Registro:</span>
+                        <span id="final-fecha-registro">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Fecha Aprobación:</span>
+                        <span id="final-fecha-aprobacion">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Empleado:</span>
+                        <span id="final-empleado">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Estado:</span>
+                        <span id="final-estado">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'devolucionprov_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-save"></i> {% if devolucion %}Actualizar Devolución{% else %}Registrar Devolución{% endif %}
+                </button>
+            </div>
+        </div>
     </form>
 </div>
 
-{% endblock %}
+<script>
+    // Navegación por pasos
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const nextStep = this.getAttribute('data-next');
+            
+            // Validar campos obligatorios antes de avanzar
+            if (validateStep(currentStep)) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + nextStep).classList.add('active');
+                
+                updateProgressIndicator(currentStep, nextStep);
+                updateSummary();
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const prevStep = this.getAttribute('data-prev');
+            
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + prevStep).classList.add('active');
+            
+            updateProgressIndicator(currentStep, prevStep, true);
+        });
+    });
+
+    function updateProgressIndicator(from, to, isBack = false) {
+        const fromStep = document.querySelector(`.progress-step[data-step="${from}"]`);
+        const toStep = document.querySelector(`.progress-step[data-step="${to}"]`);
+        
+        if (isBack) {
+            fromStep.classList.remove('active', 'completed');
+            toStep.classList.add('active');
+        } else {
+            fromStep.classList.remove('active');
+            fromStep.classList.add('completed');
+            toStep.classList.add('active');
+        }
+    }
+
+    // Toggle estado
+    document.querySelectorAll(".state-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            document.querySelectorAll(".state-option").forEach(x => x.classList.remove("active"));
+            opt.classList.add("active");
+            document.getElementById("id_estado").value = opt.dataset.value;
+            updateSummary();
+        });
+    });
+
+    // Validación de pasos
+    function validateStep(step) {
+        let isValid = true;
+        
+        if (step === '1') {
+            const facturaCompra = document.getElementById('id_id_factura_compra');
+            const cantidad = document.getElementById('id_cantidad_devuelta');
+            const productos = document.getElementById('id_productos_devueltos');
+            
+            if (!facturaCompra.value) {
+                showError(facturaCompra, 'Selecciona una factura de compra');
+                isValid = false;
+            } else {
+                hideError(facturaCompra);
+            }
+            
+            if (!cantidad.value || parseInt(cantidad.value) <= 0) {
+                showError(cantidad, 'La cantidad debe ser mayor a 0');
+                isValid = false;
+            } else {
+                hideError(cantidad);
+            }
+            
+            if (!productos.value.trim()) {
+                showError(productos, 'La descripción de productos es obligatoria');
+                isValid = false;
+            } else {
+                hideError(productos);
+            }
+        }
+        
+        if (step === '2') {
+            const fechaRegistro = document.getElementById('id_fecha_registro');
+            const empleado = document.getElementById('id_id_empleado');
+            
+            if (!fechaRegistro.value) {
+                showError(fechaRegistro, 'La fecha de registro es obligatoria');
+                isValid = false;
+            } else {
+                hideError(fechaRegistro);
+            }
+            
+            if (!empleado.value) {
+                showError(empleado, 'Selecciona un empleado');
+                isValid = false;
+            } else {
+                hideError(empleado);
+            }
+        }
+        
+        return isValid;
+    }
+
+    // Mostrar mensaje de error
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        let errorElement = document.getElementById(field.id + '-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.id = field.id + '-error';
+            errorElement.className = 'error-message';
+            field.parentNode.appendChild(errorElement);
+        }
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    // Ocultar mensaje de error
+    function hideError(field) {
+        field.classList.remove('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    // Actualizar resumen
+    function updateSummary() {
+        // Información básica
+        const facturaSelect = document.getElementById('id_id_factura_compra');
+        document.getElementById('summary-factura').textContent = 
+            facturaSelect.options[facturaSelect.selectedIndex].text || '-';
+        
+        document.getElementById('summary-productos').textContent = 
+            document.getElementById('id_productos_devueltos').value || '-';
+        
+        document.getElementById('summary-cantidad').textContent = 
+            document.getElementById('id_cantidad_devuelta').value || '-';
+        
+        // Detalles
+        document.getElementById('summary-fecha-registro').textContent = 
+            document.getElementById('id_fecha_registro').value || '-';
+        
+        document.getElementById('summary-fecha-aprobacion').textContent = 
+            document.getElementById('id_fecha_aprobacion').value || 'No especificada';
+        
+        const empleadoSelect = document.getElementById('id_id_empleado');
+        document.getElementById('summary-empleado').textContent = 
+            empleadoSelect.options[empleadoSelect.selectedIndex].text || '-';
+        
+        document.getElementById('summary-estado').textContent = 
+            document.getElementById('id_estado').value || '-';
+        
+        // Resumen final
+        document.getElementById('final-factura').textContent = 
+            facturaSelect.options[facturaSelect.selectedIndex].text || '-';
+        
+        document.getElementById('final-productos').textContent = 
+            document.getElementById('id_productos_devueltos').value || '-';
+        
+        document.getElementById('final-cantidad').textContent = 
+            document.getElementById('id_cantidad_devuelta').value || '-';
+        
+        document.getElementById('final-fecha-registro').textContent = 
+            document.getElementById('id_fecha_registro').value || '-';
+        
+        document.getElementById('final-fecha-aprobacion').textContent = 
+            document.getElementById('id_fecha_aprobacion').value || 'No especificada';
+        
+        document.getElementById('final-empleado').textContent = 
+            empleadoSelect.options[empleadoSelect.selectedIndex].text || '-';
+        
+        document.getElementById('final-estado').textContent = 
+            document.getElementById('id_estado').value || '-';
+    }
+
+    // Validación del formulario
+    document.getElementById('devolucionForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validar todos los pasos
+        if (!validateStep('1') || !validateStep('2')) {
+            isValid = false;
+            // Ir al paso 1 para mostrar errores
+            document.querySelectorAll('.step-content').forEach(step => step.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+            updateProgressIndicator('3', '1', true);
+            
+            // Mostrar mensaje de error general
+            if (!document.querySelector('.alert-danger:not(.alert-custom)')) {
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, complete todos los campos obligatorios correctamente.';
+                this.querySelector('.form-section').insertBefore(errorAlert, this.querySelector('.btn-container'));
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+    // Inicializar resumen
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSummary();
+        
+        // Actualizar resumen cuando cambien los campos
+        const campos = [
+            'id_id_factura_compra', 'id_cantidad_devuelta', 'id_productos_devueltos',
+            'id_fecha_registro', 'id_fecha_aprobacion', 'id_id_empleado', 'id_estado'
+        ];
+        campos.forEach(campoId => {
+            const campo = document.getElementById(campoId);
+            if (campo) {
+                campo.addEventListener('input', updateSummary);
+                campo.addEventListener('change', updateSummary);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,12 +1,835 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Empleado - Sistema Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --light: #f5f7fb;
+            --success: #28a745;
+            --accent: #ffb74d;
+            --danger: #dc3545;
+        }
 
-{% block content %}
-<h2>Crear Empleado</h2>
+        body {
+            background: var(--light);
+            font-family: "Segoe UI", sans-serif;
+            padding-bottom: 30px;
+        }
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Guardar</button>
-    <a href="{% url 'empleado_list' %}" class="btn btn-secondary">Cancelar</a>
-</form>
-{% endblock %}
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .input-group-text {
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .btn-accent {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .btn-accent:hover {
+            background: #ffa726;
+            transform: translateY(-2px);
+            color: #333;
+        }
+
+        .btn-success {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--success);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-list {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-list:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .state-option {
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: .3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .state-option:hover {
+            border-color: var(--accent);
+        }
+
+        .state-option.active {
+            background: rgba(255, 183, 77, 0.15);
+            border-color: var(--accent);
+            color: #333;
+        }
+
+        .role-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            margin-bottom: 10px;
+            height: 100%;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .role-card.active {
+            border-color: var(--accent);
+            background-color: rgba(255, 183, 77, 0.1);
+        }
+
+        .role-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            background-color: var(--accent);
+            color: #333;
+        }
+
+        .progress-step.completed {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .summary-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mb-5">
+    <h2 class="page-title fade-in"><i class="fa-solid fa-user-plus"></i> Crear Nuevo Empleado</h2>
+
+    <!-- Indicador de progreso -->
+    <div class="progress-indicator fade-in">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+        <div class="progress-step" data-step="4">4</div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-info alert-custom fade-in">
+        <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa todos los campos marcados con <span class="required"></span> para registrar al empleado correctamente.
+    </div>
+
+    <!-- Mostrar errores del formulario Django -->
+    {% if form.errors %}
+    <div class="alert alert-danger fade-in">
+        <strong>Errores en el formulario:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ field }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" id="empleadoForm">
+        {% csrf_token %}
+        
+        <!-- Paso 1: Información Personal -->
+        <div class="step-content active fade-in" id="step1">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-id-card"></i> Información Personal</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Nombre Completo</label>
+                        <input type="text" id="id_nombre" required name="nombre" class="form-control" 
+                               value="{{ form.nombre.value|default:'' }}" placeholder="Nombre y apellidos del empleado">
+                        <div class="error-message" id="id_nombre-error">El nombre solo puede contener letras y espacios</div>
+                        {% if form.nombre.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.nombre.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Cédula</label>
+                        <input type="text" id="id_cedula" required name="cedula" class="form-control" 
+                               value="{{ form.cedula.value|default:'' }}" placeholder="Número de cédula" maxlength="20">
+                        <div class="error-message" id="id_cedula-error">Ingresa un número de cédula válido</div>
+                        {% if form.cedula.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.cedula.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'empleado_list' %}" class="btn btn-list">
+                    <i class="fas fa-list"></i> Ver Lista de Empleados
+                </a>
+                <button type="button" class="btn btn-accent next-step" data-next="2">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 2: Información de Contacto -->
+        <div class="step-content fade-in" id="step2">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-address-book"></i> Información de Contacto</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Teléfono</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="text" id="id_telefono" required name="telefono" class="form-control" 
+                                   value="{{ form.telefono.value|default:'' }}" placeholder="Ej: 5551234" maxlength="15">
+                        </div>
+                        <div class="error-message" id="id_telefono-error">El teléfono solo puede contener números</div>
+                        {% if form.telefono.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.telefono.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" id="id_correo" name="correo" class="form-control" 
+                                   value="{{ form.correo.value|default:'' }}" placeholder="correo@ejemplo.com">
+                        </div>
+                        <div class="error-message" id="id_correo-error">El correo debe contener un @ y ser válido</div>
+                        {% if form.correo.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.correo.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_direccion" class="form-label">Dirección</label>
+                    <textarea class="form-control" id="id_direccion" name="direccion" rows="3" 
+                              placeholder="Dirección completa del empleado">{{ form.direccion.value|default:'' }}</textarea>
+                    {% if form.direccion.errors %}
+                    <div class="error-message" style="display: block;">
+                        {% for error in form.direccion.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'empleado_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="button" class="btn btn-accent next-step" data-next="3">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 3: Rol y Estado -->
+        <div class="step-content fade-in" id="step3">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-user-tag"></i> Rol y Estado</div>
+
+                <!-- Rol del Empleado -->
+                <div class="mb-4">
+                    <label class="form-label required">Selecciona el Rol</label>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="role-card {% if form.rol.value == 'administrador' or not form.rol.value %}active{% endif %}" data-value="administrador">
+                                <div class="role-icon"><i class="fas fa-user-shield"></i></div>
+                                <div>Administrador</div>
+                                <small class="text-muted">Acceso completo al sistema</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="role-card {% if form.rol.value == 'doctor' %}active{% endif %}" data-value="doctor">
+                                <div class="role-icon"><i class="fas fa-user-md"></i></div>
+                                <div>Doctor</div>
+                                <small class="text-muted">Atención médica y recetas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="role-card {% if form.rol.value == 'doctora' %}active{% endif %}" data-value="doctora">
+                                <div class="role-icon"><i class="fas fa-user-md"></i></div>
+                                <div>Doctora</div>
+                                <small class="text-muted">Atención médica y recetas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="role-card {% if form.rol.value == 'vendedor' %}active{% endif %}" data-value="vendedor">
+                                <div class="role-icon"><i class="fas fa-cash-register"></i></div>
+                                <div>Vendedor</div>
+                                <small class="text-muted">Ventas y atención al cliente</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="role-card {% if form.rol.value == 'vendedora' %}active{% endif %}" data-value="vendedora">
+                                <div class="role-icon"><i class="fas fa-cash-register"></i></div>
+                                <div>Vendedora</div>
+                                <small class="text-muted">Ventas y atención al cliente</small>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="id_rol" name="rol" value="{{ form.rol.value|default:'administrador' }}" required>
+                    <div class="error-message" id="id_rol-error">Selecciona el rol del empleado</div>
+                    {% if form.rol.errors %}
+                    <div class="error-message" style="display: block;">
+                        {% for error in form.rol.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Estado -->
+                <div class="mb-4">
+                    <label class="form-label required">Estado</label>
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-2">
+                            <div class="state-option {% if form.estado.value == 1 or not form.estado.value %}active{% endif %}" data-value="1">
+                                <i class="fa-solid fa-check-circle"></i> Activo
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="state-option {% if form.estado.value == 0 %}active{% endif %}" data-value="0">
+                                <i class="fa-solid fa-times-circle"></i> Inactivo
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="id_estado" name="estado" value="{{ form.estado.value|default:'1' }}" required>
+                    <div class="error-message" id="id_estado-error">Selecciona el estado del empleado</div>
+                    {% if form.estado.errors %}
+                    <div class="error-message" style="display: block;">
+                        {% for error in form.estado.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'empleado_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="button" class="btn btn-accent next-step" data-next="4">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 4: Confirmación -->
+        <div class="step-content fade-in" id="step4">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-check-circle"></i> Confirmación</div>
+
+                <div class="alert alert-success alert-custom">
+                    <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="summary-section">
+                            <h5 class="summary-title">Información Personal</h5>
+                            <p><strong>Nombre:</strong> <span id="summary-nombre">{{ form.nombre.value|default:"-" }}</span></p>
+                            <p><strong>Cédula:</strong> <span id="summary-cedula">{{ form.cedula.value|default:"-" }}</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="summary-section">
+                            <h5 class="summary-title">Información de Contacto</h5>
+                            <p><strong>Teléfono:</strong> <span id="summary-telefono">{{ form.telefono.value|default:"-" }}</span></p>
+                            <p><strong>Correo:</strong> <span id="summary-correo">{{ form.correo.value|default:"-" }}</span></p>
+                            <p><strong>Dirección:</strong> <span id="summary-direccion">{{ form.direccion.value|default:"-" }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="summary-section">
+                            <h5 class="summary-title">Información Laboral</h5>
+                            <p><strong>Rol:</strong> <span id="summary-rol">{{ form.rol.value|default:"-" }}</span></p>
+                            <p><strong>Estado:</strong> <span id="summary-estado">{% if form.estado.value == 1 or not form.estado.value %}Activo{% else %}Inactivo{% endif %}</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="summary-section">
+                            <h5 class="summary-title">Observaciones</h5>
+                            <p class="text-muted">Si todo está correcto, haz clic en "Guardar Empleado" para completar el registro.</p>
+                            <p class="text-muted">Si necesitas hacer cambios, puedes usar el botón "Anterior" para volver a los pasos anteriores.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'empleado_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="3">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-save"></i> Guardar Empleado
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Navegación por pasos
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const nextStep = this.getAttribute('data-next');
+            
+            // Validar campos obligatorios antes de avanzar
+            if (validateStep(currentStep)) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + nextStep).classList.add('active');
+                
+                updateProgressIndicator(currentStep, nextStep);
+                updateSummary();
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const prevStep = this.getAttribute('data-prev');
+            
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + prevStep).classList.add('active');
+            
+            updateProgressIndicator(currentStep, prevStep, true);
+        });
+    });
+
+    function updateProgressIndicator(from, to, isBack = false) {
+        const fromStep = document.querySelector(`.progress-step[data-step="${from}"]`);
+        const toStep = document.querySelector(`.progress-step[data-step="${to}"]`);
+        
+        if (isBack) {
+            fromStep.classList.remove('active', 'completed');
+            toStep.classList.add('active');
+        } else {
+            fromStep.classList.remove('active');
+            fromStep.classList.add('completed');
+            toStep.classList.add('active');
+        }
+    }
+
+    // Selección de rol con tarjetas
+    document.querySelectorAll('.role-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('id_rol').value = this.getAttribute('data-value');
+            hideError(document.getElementById('id_rol'));
+            updateSummary();
+        });
+    });
+
+    // Toggle estado
+    document.querySelectorAll(".state-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            document.querySelectorAll(".state-option").forEach(x => x.classList.remove("active"));
+            opt.classList.add("active");
+            document.getElementById("id_estado").value = opt.dataset.value;
+            hideError(document.getElementById('id_estado'));
+            updateSummary();
+        });
+    });
+
+    // Mostrar mensaje de error
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // Ocultar mensaje de error
+    function hideError(field) {
+        field.classList.remove('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    // Validación de pasos
+    function validateStep(step) {
+        let isValid = true;
+        
+        if (step === '1') {
+            const nombre = document.getElementById('id_nombre');
+            const cedula = document.getElementById('id_cedula');
+            
+            // Validar nombre (solo letras y espacios)
+            const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+            if (!nombre.value.trim()) {
+                showError(nombre, 'El nombre es obligatorio');
+                isValid = false;
+            } else if (!nombreRegex.test(nombre.value)) {
+                showError(nombre, 'El nombre solo puede contener letras y espacios');
+                isValid = false;
+            } else {
+                hideError(nombre);
+            }
+            
+            // Validar cédula (puede contener letras y números)
+            if (!cedula.value.trim()) {
+                showError(cedula, 'La cédula es obligatoria');
+                isValid = false;
+            } else {
+                hideError(cedula);
+            }
+        } else if (step === '2') {
+            const telefono = document.getElementById('id_telefono');
+            const correo = document.getElementById('id_correo');
+            
+            // Validar teléfono (solo números)
+            if (!telefono.value.trim()) {
+                showError(telefono, 'El teléfono es obligatorio');
+                isValid = false;
+            } else if (!/^\d+$/.test(telefono.value)) {
+                showError(telefono, 'El teléfono solo puede contener números');
+                isValid = false;
+            } else {
+                hideError(telefono);
+            }
+            
+            // Validar correo (debe contener @ si se proporciona)
+            if (correo.value && !correo.value.includes('@')) {
+                showError(correo, 'El correo debe contener un @');
+                isValid = false;
+            } else {
+                hideError(correo);
+            }
+        } else if (step === '3') {
+            const rol = document.getElementById('id_rol');
+            const estado = document.getElementById('id_estado');
+            
+            // Validar rol
+            if (!rol.value) {
+                showError(rol, 'Selecciona el rol del empleado');
+                isValid = false;
+            } else {
+                hideError(rol);
+            }
+            
+            // Validar estado
+            if (!estado.value) {
+                showError(estado, 'Selecciona el estado del empleado');
+                isValid = false;
+            } else {
+                hideError(estado);
+            }
+        }
+        
+        return isValid;
+    }
+
+    // Actualizar resumen
+    function updateSummary() {
+        document.getElementById('summary-nombre').textContent = 
+            document.getElementById('id_nombre').value || '-';
+        document.getElementById('summary-cedula').textContent = 
+            document.getElementById('id_cedula').value || '-';
+        document.getElementById('summary-telefono').textContent = 
+            document.getElementById('id_telefono').value || '-';
+        document.getElementById('summary-correo').textContent = 
+            document.getElementById('id_correo').value || '-';
+        document.getElementById('summary-direccion').textContent = 
+            document.getElementById('id_direccion').value || '-';
+        document.getElementById('summary-rol').textContent = 
+            document.getElementById('id_rol').value || '-';
+        
+        const estado = document.getElementById('id_estado').value;
+        document.getElementById('summary-estado').textContent = 
+            estado === '1' ? 'Activo' : 'Inactivo';
+    }
+
+    // Validación en tiempo real
+    document.getElementById('id_nombre').addEventListener('input', function() {
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        if (this.value && !regex.test(this.value)) {
+            showError(this, 'El nombre solo puede contener letras y espacios');
+        } else {
+            hideError(this);
+        }
+    });
+
+    document.getElementById('id_telefono').addEventListener('input', function() {
+        if (this.value && !/^\d+$/.test(this.value)) {
+            showError(this, 'El teléfono solo puede contener números');
+        } else {
+            hideError(this);
+        }
+    });
+
+    document.getElementById('id_correo').addEventListener('input', function() {
+        if (this.value && !this.value.includes('@')) {
+            showError(this, 'El correo debe contener un @');
+        } else {
+            hideError(this);
+        }
+    });
+
+    // Validación del formulario
+    document.getElementById('empleadoForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validar todos los pasos
+        if (!validateStep('1') || !validateStep('2') || !validateStep('3')) {
+            isValid = false;
+            // Ir al paso 1 para mostrar errores
+            document.querySelectorAll('.step-content').forEach(step => step.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+            updateProgressIndicator('4', '1', true);
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // Mostrar mensaje de error general
+            if (!document.querySelector('.alert-danger')) {
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, complete todos los campos obligatorios y verifique los datos ingresados.';
+                this.querySelector('.form-section').insertBefore(errorAlert, this.querySelector('.btn-container'));
+            }
+        }
+    });
+    
+    // Remover clases de error al escribir
+    const inputs = document.querySelectorAll('input:not([type="hidden"]), textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                hideError(this);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -212,22 +212,97 @@ def venta_create(request):
     if request.method == 'POST':
         form = VentaForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('venta_list')
+            # Guardar la venta primero
+            venta = form.save(commit=False)
+            
+            # Verificar que hay suficiente stock
+            medicamento = venta.id_medicamento
+            if venta.cantidad > medicamento.cantidad:
+                # Si no hay suficiente stock, mostrar error
+                form.add_error('cantidad', f'No hay suficiente stock. Stock disponible: {medicamento.cantidad}')
+            else:
+                # Si hay stock, guardar la venta y actualizar stock
+                venta.save()
+                medicamento.cantidad -= venta.cantidad
+                medicamento.save()
+                return redirect('venta_list')
     else:
         form = VentaForm()
-    return render(request, 'venta/create.html', {'form': form})
+    
+    # Obtener clientes, empleados y medicamentos para los selects
+    clientes = Cliente.objects.all()
+    empleados = Empleados.objects.all()
+    medicamentos = Medicamento.objects.filter(cantidad__gt=0)  # Solo medicamentos con stock
+    
+    return render(request, 'venta/create.html', {
+        'form': form,
+        'clientes': clientes,
+        'empleados': empleados,
+        'medicamentos': medicamentos
+    })
 
 def venta_edit(request, id_venta):
     venta = get_object_or_404(Venta, pk=id_venta)
-    form = VentaForm(request.POST or None, instance=venta)
-    if form.is_valid():
-        form.save()
-        return redirect('venta_list')
-    return render(request, 'venta/edit.html', {'form': form})
+    cantidad_original = venta.cantidad
+    medicamento_original = venta.id_medicamento
+    
+    if request.method == 'POST':
+        form = VentaForm(request.POST, instance=venta)
+        if form.is_valid():
+            venta_nueva = form.save(commit=False)
+            medicamento_nuevo = venta_nueva.id_medicamento
+            
+            # Caso 1: Mismo medicamento, cambiar cantidad
+            if medicamento_original == medicamento_nuevo:
+                diferencia = venta_nueva.cantidad - cantidad_original
+                if diferencia > medicamento_original.cantidad:
+                    form.add_error('cantidad', f'No hay suficiente stock. Stock disponible: {medicamento_original.cantidad}')
+                else:
+                    medicamento_original.cantidad -= diferencia
+                    medicamento_original.save()
+                    venta_nueva.save()
+                    return redirect('venta_list')
+            
+            # Caso 2: Diferente medicamento
+            else:
+                # Verificar stock en el nuevo medicamento
+                if venta_nueva.cantidad > medicamento_nuevo.cantidad:
+                    form.add_error('cantidad', f'No hay suficiente stock en el nuevo medicamento. Stock disponible: {medicamento_nuevo.cantidad}')
+                else:
+                    # Restaurar stock del medicamento original
+                    medicamento_original.cantidad += cantidad_original
+                    medicamento_original.save()
+                    
+                    # Descontar stock del nuevo medicamento
+                    medicamento_nuevo.cantidad -= venta_nueva.cantidad
+                    medicamento_nuevo.save()
+                    
+                    venta_nueva.save()
+                    return redirect('venta_list')
+    else:
+        form = VentaForm(instance=venta)
+    
+    # Obtener clientes, empleados y medicamentos para los selects
+    clientes = Cliente.objects.all()
+    empleados = Empleados.objects.all()
+    medicamentos = Medicamento.objects.filter(cantidad__gt=0)
+    
+    return render(request, 'venta/edit.html', {
+        'form': form,
+        'venta': venta,
+        'clientes': clientes,
+        'empleados': empleados,
+        'medicamentos': medicamentos
+    })
 
 def venta_delete(request, id_venta):
     venta = get_object_or_404(Venta, pk=id_venta)
+    
+    # Restaurar el stock del medicamento antes de eliminar la venta
+    medicamento = venta.id_medicamento
+    medicamento.cantidad += venta.cantidad
+    medicamento.save()
+    
     venta.delete()
     return redirect('venta_list')
 
@@ -264,7 +339,13 @@ def lote_create(request):
     else:
         form = LoteForm()
 
-    return render(request, 'lote/create.html', {'form': form})
+    # OBTENER MEDICAMENTOS PARA EL CONTEXTO
+    medicamentos = Medicamento.objects.all()
+    
+    return render(request, 'lote/create.html', {
+        'form': form,
+        'medicamentos': medicamentos  # Añadir al contexto
+    })
 
 
 def lote_edit(request, id_lote):
@@ -303,9 +384,13 @@ def lote_edit(request, id_lote):
         form = LoteForm(instance=lote)
         print("=== FORMULARIO CARGADO (GET) ===")
 
+    # OBTENER MEDICAMENTOS PARA EL CONTEXTO
+    medicamentos = Medicamento.objects.all()
+
     return render(request, 'lote/edit.html', {
         'form': form,
-        'lote': lote
+        'lote': lote,
+        'medicamentos': medicamentos  # Añadir al contexto
     })
 
 
@@ -330,7 +415,14 @@ def facturacompra_create(request):
     else:
         form = FacturaCompraForm()
 
-    return render(request, 'facturas/facturacompra_form.html', {'form': form, 'titulo': 'Crear Factura'})
+    # OBTENER PROVEEDORES PARA EL CONTEXTO
+    proveedores = Proveedor.objects.all()
+    
+    return render(request, 'facturas/facturacompra_form.html', {
+        'form': form, 
+        'titulo': 'Crear Factura de Compra',
+        'proveedores': proveedores  # Añadir al contexto
+    })
 
 
 # EDITAR FACTURA
@@ -345,7 +437,15 @@ def facturacompra_edit(request, id_factura_compra):
     else:
         form = FacturaCompraForm(instance=factura)
 
-    return render(request, 'facturas/facturacompra_form.html', {'form': form, 'titulo': 'Editar Factura'})
+    # OBTENER PROVEEDORES PARA EL CONTEXTO
+    proveedores = Proveedor.objects.all()
+
+    return render(request, 'facturas/facturacompra_form.html', {
+        'form': form, 
+        'titulo': 'Editar Factura de Compra',
+        'factura': factura,
+        'proveedores': proveedores  # Añadir al contexto
+    })
 
 
 # ELIMINAR FACTURA
@@ -495,12 +595,18 @@ def cliente_delete(request, pk):
 
 # LISTAR
 def devolucioncliente_list(request):
-    devoluciones = DevolucionCliente.objects.all().order_by('-id_devolucion_cliente')
+    devoluciones = DevolucionCliente.objects.select_related(
+        'id_venta', 'id_medicamento', 'id_empleado'
+    ).all().order_by('-id_devolucion_cliente')
     return render(request, 'devolucioncliente/devolucion_list.html', {'devoluciones': devoluciones})
-
 
 # CREAR
 def devolucioncliente_create(request):
+    # Obtener las listas para los dropdowns
+    ventas = Venta.objects.all()
+    medicamentos = Medicamento.objects.all()
+    empleados = Empleados.objects.all()
+    
     if request.method == 'POST':
         form = DevolucionClienteForm(request.POST)
 
@@ -525,12 +631,22 @@ def devolucioncliente_create(request):
     else:
         form = DevolucionClienteForm()
 
-    return render(request, 'devolucioncliente/devolucion_form.html', {'form': form, 'titulo': 'Nueva Devolución'})
-
+    return render(request, 'devolucioncliente/devolucion_form.html', {
+        'form': form, 
+        'titulo': 'Registrar Devolución',
+        'ventas': ventas,
+        'medicamentos': medicamentos,
+        'empleados': empleados
+    })
 
 # EDITAR
 def devolucioncliente_edit(request, pk):
     devolucion = get_object_or_404(DevolucionCliente, pk=pk)
+    
+    # Obtener las listas para los dropdowns
+    ventas = Venta.objects.all()
+    medicamentos = Medicamento.objects.all()
+    empleados = Empleados.objects.all()
 
     if request.method == 'POST':
         form = DevolucionClienteForm(request.POST, instance=devolucion)
@@ -554,8 +670,14 @@ def devolucioncliente_edit(request, pk):
     else:
         form = DevolucionClienteForm(instance=devolucion)
 
-    return render(request, 'devolucioncliente/devolucion_form.html', {'form': form, 'titulo': 'Editar Devolución'})
-
+    return render(request, 'devolucioncliente/devolucion_form.html', {
+        'form': form, 
+        'titulo': 'Editar Devolución',
+        'devolucion': devolucion,
+        'ventas': ventas,
+        'medicamentos': medicamentos,
+        'empleados': empleados
+    })
 
 # ELIMINAR
 def devolucioncliente_delete(request, pk):
@@ -570,7 +692,9 @@ def devolucioncliente_delete(request, pk):
 
 # LISTA
 def devolucionproveedor_list(request):
-    devoluciones = DevolucionProveedor.objects.all().order_by('-id_devolucion')
+    devoluciones = DevolucionProveedor.objects.select_related(
+        'id_factura_compra', 'id_empleado'
+    ).all().order_by('-id_devolucion')
     return render(request, 'devolucionproveedor/devolucionprov_list.html', {
         'devoluciones': devoluciones
     })
@@ -578,6 +702,10 @@ def devolucionproveedor_list(request):
 
 # CREAR
 def devolucionproveedor_create(request):
+    # Obtener las listas para los dropdowns
+    facturas = FacturaCompra.objects.select_related('id_proveedor').all()
+    empleados = Empleados.objects.all()
+    
     if request.method == 'POST':
         form = DevolucionProveedorForm(request.POST)
 
@@ -597,13 +725,19 @@ def devolucionproveedor_create(request):
 
     return render(request, 'devolucionproveedor/devolucionprov_form.html', {
         'form': form,
-        'titulo': 'Registrar Devolución a Proveedor'
+        'titulo': 'Registrar Devolución a Proveedor',
+        'facturas': facturas,
+        'empleados': empleados
     })
 
 
 # EDITAR
 def devolucionproveedor_edit(request, pk):
     devolucion = get_object_or_404(DevolucionProveedor, pk=pk)
+    
+    # Obtener las listas para los dropdowns
+    facturas = FacturaCompra.objects.select_related('id_proveedor').all()
+    empleados = Empleados.objects.all()
 
     if request.method == 'POST':
         form = DevolucionProveedorForm(request.POST, instance=devolucion)
@@ -622,7 +756,10 @@ def devolucionproveedor_edit(request, pk):
 
     return render(request, 'devolucionproveedor/devolucionprov_form.html', {
         'form': form,
-        'titulo': 'Editar Devolución de Proveedor'
+        'titulo': 'Editar Devolución de Proveedor',
+        'devolucion': devolucion,
+        'facturas': facturas,
+        'empleados': empleados
     })
 
 

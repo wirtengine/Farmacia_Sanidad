@@ -84,6 +84,9 @@ class Lote(models.Model):
     fecha_vencimiento = models.DateField(blank=True, null=True)
     estado = models.CharField(max_length=50, blank=True, null=True)
     id_factura_compra = models.ForeignKey(FacturaCompra, on_delete=models.CASCADE, db_column='id_factura_compra', blank=True, null=True)
+    
+    # AGREGAR ESTA RELACIÓN
+    id_medicamento = models.ForeignKey(Medicamento, on_delete=models.CASCADE, db_column='id_medicamento', blank=True, null=True)
 
     class Meta:
         db_table = 'Lote'
@@ -149,6 +152,10 @@ class Venta(models.Model):
     descuento = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     impuesto = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     estado = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Agregar estos dos campos
+    id_medicamento = models.ForeignKey(Medicamento, on_delete=models.SET_NULL, blank=True, null=True)
+    cantidad = models.IntegerField(default=1)
 
     class Meta:
         db_table = 'Venta'

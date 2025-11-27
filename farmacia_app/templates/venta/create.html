@@ -1,13 +1,1023 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Venta - Sistema Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --light: #f5f7fb;
+            --success: #28a745;
+            --accent: #ffb74d;
+            --danger: #dc3545;
+        }
 
-{% block content %}
-<h2>Crear Venta</h2>
+        body {
+            background: var(--light);
+            font-family: "Segoe UI", sans-serif;
+            padding-bottom: 30px;
+        }
 
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-    <a href="{% url 'venta_list' %}">Cancelar</a>
-</form>
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
 
-{% endblock %}
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .input-group-text {
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .btn-success {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--success);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-list {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-list:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-accent {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .btn-accent:hover {
+            background: #ffa726;
+            transform: translateY(-2px);
+            color: #333;
+        }
+
+        .btn-secondary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .state-option {
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: .3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .state-option:hover {
+            border-color: var(--accent);
+        }
+
+        .state-option.active {
+            background: rgba(255, 183, 77, 0.15);
+            border-color: var(--accent);
+            color: #333;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .current-info {
+            background-color: #fff5e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .product-item {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .product-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .product-price {
+            font-weight: 700;
+            color: var(--success);
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quantity-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .summary-total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--success);
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            background-color: var(--accent);
+            color: #333;
+        }
+
+        .progress-step.completed {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mb-5">
+    <h2 class="page-title fade-in"><i class="fa-solid fa-cash-register"></i> Nueva Venta</h2>
+
+    <!-- Indicador de progreso -->
+    <div class="progress-indicator fade-in">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-info alert-custom fade-in">
+        <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa todos los campos para registrar la venta correctamente.
+    </div>
+
+    <!-- Mostrar errores del formulario Django -->
+    {% if form.errors %}
+    <div class="alert alert-danger fade-in">
+        <strong>Errores en el formulario:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ field }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" id="ventaForm">
+        {% csrf_token %}
+        
+        <!-- Paso 1: Información Básica -->
+        <div class="step-content active fade-in" id="step1">
+            <div class="form-container">
+                <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información Básica</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Cliente</label>
+                        <select class="form-select" id="id_id_cliente" name="id_cliente" required>
+                            <option value="">Selecciona un cliente</option>
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id_cliente }}">{{ cliente.nombre }} - {{ cliente.cedula }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.id_cliente.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.id_cliente.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Empleado</label>
+                        <select class="form-select" id="id_id_empleado" name="id_empleado" required>
+                            <option value="">Selecciona un empleado</option>
+                            {% for empleado in empleados %}
+                                <option value="{{ empleado.id_empleado }}">{{ empleado.nombre }} - {{ empleado.rol }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.id_empleado.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.id_empleado.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Fecha</label>
+                        <input type="date" id="id_fecha" name="fecha" class="form-control" 
+                               value="{% now 'Y-m-d' %}" required>
+                        {% if form.fecha.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.fecha.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Estado</label>
+                        <div class="row text-center">
+                            <div class="col-md-4 mb-2">
+                                <div class="state-option active" data-value="Completada">
+                                    <i class="fa-solid fa-check-circle"></i> Completada
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="state-option" data-value="Pendiente">
+                                    <i class="fa-solid fa-clock"></i> Pendiente
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="state-option" data-value="Cancelada">
+                                    <i class="fa-solid fa-times-circle"></i> Cancelada
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="id_estado" name="estado" value="Completada" required>
+                        {% if form.estado.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.estado.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'venta_list' %}" class="btn btn-list">
+                    <i class="fas fa-list"></i> Ver Lista de Ventas
+                </a>
+                <button type="button" class="btn btn-accent next-step" data-next="2">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 2: Productos -->
+        <div class="step-content fade-in" id="step2">
+            <div class="form-container">
+                <div class="section-title"><i class="fa-solid fa-pills"></i> Productos de la Venta</div>
+                
+                <div class="alert alert-warning alert-custom">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Atención:</strong> Selecciona los productos y cantidades para esta venta.
+                </div>
+                
+                <!-- Selección de medicamento principal -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label required">Medicamento</label>
+                        <select class="form-select" id="id_id_medicamento" name="id_medicamento" required>
+                            <option value="">Selecciona un medicamento</option>
+                            {% for medicamento in medicamentos %}
+                                <option value="{{ medicamento.id_medicamento }}" 
+                                        data-precio="{{ medicamento.precio_unitario }}"
+                                        data-stock="{{ medicamento.cantidad }}">
+                                    {{ medicamento.nombre_generico }} - ${{ medicamento.precio_unitario }} - Stock: {{ medicamento.cantidad }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.id_medicamento.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.id_medicamento.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required">Cantidad</label>
+                        <input type="number" id="id_cantidad" name="cantidad" class="form-control" 
+                               value="1" min="1" step="1" required>
+                        {% if form.cantidad.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.cantidad.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="help-text">Stock disponible: <span id="stock-disponible">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Información del producto seleccionado -->
+                <div class="product-item" id="producto-seleccionado" style="display: none;">
+                    <div class="product-header">
+                        <div class="product-name" id="producto-nombre">-</div>
+                        <div class="product-price" id="producto-precio">$0.00</div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="quantity-controls">
+                                <button type="button" class="quantity-btn" id="decrease-cantidad">-</button>
+                                <input type="number" class="quantity-input" id="cantidad-manual" value="1" min="1" step="1">
+                                <button type="button" class="quantity-btn" id="increase-cantidad">+</button>
+                                <span class="ms-2 text-muted">Disponible: <span id="producto-stock">0</span></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <strong>Subtotal: $<span id="producto-subtotal">0.00</span></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h5 class="section-title mb-3"><i class="fa-solid fa-receipt"></i> Resumen de Productos</h5>
+                    <div class="summary-row">
+                        <span>Subtotal Productos:</span>
+                        <span id="summary-subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Cantidad de Productos:</span>
+                        <span id="summary-cantidad">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'venta_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="button" class="btn btn-accent next-step" data-next="3">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 3: Confirmación y Finalización -->
+        <div class="step-content fade-in" id="step3">
+            <div class="form-container">
+                <div class="section-title"><i class="fa-solid fa-check-circle"></i> Confirmación y Finalización</div>
+
+                <div class="alert alert-success alert-custom">
+                    <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar la venta.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información Básica</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Cliente:</strong> <span id="summary-cliente">-</span></p>
+                                <p><strong>Empleado:</strong> <span id="summary-empleado">-</span></p>
+                                <p><strong>Fecha:</strong> <span id="summary-fecha">-</span></p>
+                                <p><strong>Estado:</strong> <span id="summary-estado">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-pills me-2"></i>Producto Seleccionado</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Medicamento:</strong> <span id="summary-medicamento">-</span></p>
+                                <p><strong>Cantidad:</strong> <span id="summary-cantidad-producto">-</span></p>
+                                <p><strong>Precio Unitario:</strong> <span id="summary-precio-unitario">-</span></p>
+                                <p><strong>Subtotal:</strong> <span id="summary-subtotal-producto">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Información Financiera</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Descuento ($)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                            <input type="number" id="id_descuento" name="descuento" class="form-control" 
+                                                   value="0" step="0.01" min="0" placeholder="0.00">
+                                        </div>
+                                        {% if form.descuento.errors %}
+                                        <div class="error-message" style="display: block;">
+                                            {% for error in form.descuento.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Impuesto ($)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-percentage"></i></span>
+                                            <input type="number" id="id_impuesto" name="impuesto" class="form-control" 
+                                                   value="0" step="0.01" min="0" placeholder="0.00">
+                                        </div>
+                                        {% if form.impuesto.errors %}
+                                        <div class="error-message" style="display: block;">
+                                            {% for error in form.impuesto.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Total ($)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                                            <input type="number" id="id_total" name="total" class="form-control" 
+                                                   value="0" step="0.01" min="0" readonly style="background-color: #f8f9fa;">
+                                        </div>
+                                        {% if form.total.errors %}
+                                        <div class="error-message" style="display: block;">
+                                            {% for error in form.total.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen Final -->
+                <div class="summary-card">
+                    <h5 class="section-title mb-3"><i class="fa-solid fa-receipt"></i> Resumen Final de la Venta</h5>
+                    <div class="summary-row">
+                        <span>Subtotal Productos:</span>
+                        <span id="final-subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Descuento:</span>
+                        <span id="final-descuento">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Impuesto:</span>
+                        <span id="final-impuesto">$0.00</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total:</span>
+                        <span id="final-total">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'venta_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-save"></i> Guardar Venta
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Variables globales
+    let medicamentoSeleccionado = null;
+
+    // Navegación por pasos
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const nextStep = this.getAttribute('data-next');
+            
+            // Validar campos obligatorios antes de avanzar
+            if (validateStep(currentStep)) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + nextStep).classList.add('active');
+                
+                updateProgressIndicator(currentStep, nextStep);
+                updateSummary();
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const prevStep = this.getAttribute('data-prev');
+            
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + prevStep).classList.add('active');
+            
+            updateProgressIndicator(currentStep, prevStep, true);
+        });
+    });
+
+    function updateProgressIndicator(from, to, isBack = false) {
+        const fromStep = document.querySelector(`.progress-step[data-step="${from}"]`);
+        const toStep = document.querySelector(`.progress-step[data-step="${to}"]`);
+        
+        if (isBack) {
+            fromStep.classList.remove('active', 'completed');
+            toStep.classList.add('active');
+        } else {
+            fromStep.classList.remove('active');
+            fromStep.classList.add('completed');
+            toStep.classList.add('active');
+        }
+    }
+
+    // Toggle estado
+    document.querySelectorAll(".state-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            document.querySelectorAll(".state-option").forEach(x => x.classList.remove("active"));
+            opt.classList.add("active");
+            document.getElementById("id_estado").value = opt.dataset.value;
+            updateSummary();
+        });
+    });
+
+    // Event listeners para medicamento y cantidad
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cambio de medicamento
+        document.getElementById('id_id_medicamento').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            
+            if (selectedOption.value) {
+                medicamentoSeleccionado = {
+                    id: selectedOption.value,
+                    nombre: selectedOption.text.split(' - ')[0],
+                    precio: parseFloat(selectedOption.getAttribute('data-precio')),
+                    stock: parseInt(selectedOption.getAttribute('data-stock'))
+                };
+                
+                // Mostrar información del producto
+                document.getElementById('producto-seleccionado').style.display = 'block';
+                document.getElementById('producto-nombre').textContent = medicamentoSeleccionado.nombre;
+                document.getElementById('producto-precio').textContent = '$' + medicamentoSeleccionado.precio.toFixed(2);
+                document.getElementById('producto-stock').textContent = medicamentoSeleccionado.stock;
+                
+                // Actualizar stock disponible
+                document.getElementById('stock-disponible').textContent = medicamentoSeleccionado.stock;
+                
+                // Ajustar cantidad máxima
+                const cantidadInput = document.getElementById('id_cantidad');
+                const cantidadManual = document.getElementById('cantidad-manual');
+                cantidadInput.max = medicamentoSeleccionado.stock;
+                cantidadManual.max = medicamentoSeleccionado.stock;
+                
+                // Si la cantidad actual es mayor al stock, ajustarla
+                if (parseInt(cantidadInput.value) > medicamentoSeleccionado.stock) {
+                    cantidadInput.value = medicamentoSeleccionado.stock;
+                    cantidadManual.value = medicamentoSeleccionado.stock;
+                }
+                
+                // Actualizar cálculos
+                actualizarCalculosProductos();
+            } else {
+                document.getElementById('producto-seleccionado').style.display = 'none';
+                medicamentoSeleccionado = null;
+                actualizarCalculosProductos();
+            }
+        });
+        
+        // Cambio de cantidad desde el input principal
+        document.getElementById('id_cantidad').addEventListener('change', function() {
+            const cantidadManual = document.getElementById('cantidad-manual');
+            cantidadManual.value = this.value;
+            actualizarCalculosProductos();
+        });
+        
+        document.getElementById('id_cantidad').addEventListener('input', function() {
+            const cantidadManual = document.getElementById('cantidad-manual');
+            cantidadManual.value = this.value;
+            actualizarCalculosProductos();
+        });
+        
+        // Cambio de cantidad desde el input manual
+        document.getElementById('cantidad-manual').addEventListener('change', function() {
+            const cantidadInput = document.getElementById('id_cantidad');
+            cantidadInput.value = this.value;
+            actualizarCalculosProductos();
+        });
+        
+        // Botones de incremento/decremento
+        document.getElementById('decrease-cantidad').addEventListener('click', function() {
+            const cantidadInput = document.getElementById('id_cantidad');
+            const cantidadManual = document.getElementById('cantidad-manual');
+            if (parseInt(cantidadInput.value) > 1) {
+                cantidadInput.value = parseInt(cantidadInput.value) - 1;
+                cantidadManual.value = cantidadInput.value;
+                actualizarCalculosProductos();
+            }
+        });
+        
+        document.getElementById('increase-cantidad').addEventListener('click', function() {
+            const cantidadInput = document.getElementById('id_cantidad');
+            const cantidadManual = document.getElementById('cantidad-manual');
+            const max = parseInt(cantidadInput.getAttribute('max'));
+            if (parseInt(cantidadInput.value) < max) {
+                cantidadInput.value = parseInt(cantidadInput.value) + 1;
+                cantidadManual.value = cantidadInput.value;
+                actualizarCalculosProductos();
+            }
+        });
+        
+        // Event listeners para descuento e impuesto
+        document.getElementById('id_descuento').addEventListener('input', actualizarCalculosFinales);
+        document.getElementById('id_impuesto').addEventListener('input', actualizarCalculosFinales);
+    });
+    
+    function actualizarCalculosProductos() {
+        if (!medicamentoSeleccionado) {
+            // No hay medicamento seleccionado
+            document.getElementById('summary-subtotal').textContent = '$0.00';
+            document.getElementById('summary-cantidad').textContent = '0';
+            document.getElementById('producto-subtotal').textContent = '0.00';
+            actualizarCalculosFinales();
+            return;
+        }
+        
+        const cantidad = parseInt(document.getElementById('id_cantidad').value) || 0;
+        const precio = medicamentoSeleccionado.precio;
+        const subtotal = precio * cantidad;
+        
+        // Actualizar elementos de la interfaz
+        document.getElementById('summary-subtotal').textContent = '$' + subtotal.toFixed(2);
+        document.getElementById('summary-cantidad').textContent = cantidad;
+        document.getElementById('producto-subtotal').textContent = subtotal.toFixed(2);
+        
+        // Actualizar cálculos finales
+        actualizarCalculosFinales();
+    }
+    
+    function actualizarCalculosFinales() {
+        // Obtener subtotal de productos
+        const subtotal = parseFloat(document.getElementById('summary-subtotal').textContent.replace('$', '')) || 0;
+        
+        // Obtener descuento e impuesto
+        const descuento = parseFloat(document.getElementById('id_descuento').value) || 0;
+        const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+        
+        // Calcular total
+        const total = subtotal - descuento + impuesto;
+        
+        // Actualizar elementos del paso 3
+        document.getElementById('final-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('final-descuento').textContent = `$${descuento.toFixed(2)}`;
+        document.getElementById('final-impuesto').textContent = `$${impuesto.toFixed(2)}`;
+        document.getElementById('final-total').textContent = `$${total.toFixed(2)}`;
+        
+        // Actualizar campo total del formulario
+        document.getElementById('id_total').value = total.toFixed(2);
+    }
+    
+    function updateSummary() {
+        // Actualizar información del paso 3
+        const clienteSelect = document.getElementById('id_id_cliente');
+        const empleadoSelect = document.getElementById('id_id_empleado');
+        const fechaInput = document.getElementById('id_fecha');
+        const estadoInput = document.getElementById('id_estado');
+        const medicamentoSelect = document.getElementById('id_id_medicamento');
+        const cantidadInput = document.getElementById('id_cantidad');
+        
+        document.getElementById('summary-cliente').textContent = 
+            clienteSelect.options[clienteSelect.selectedIndex].text || '-';
+        document.getElementById('summary-empleado').textContent = 
+            empleadoSelect.options[empleadoSelect.selectedIndex].text || '-';
+        document.getElementById('summary-fecha').textContent = fechaInput.value || '-';
+        document.getElementById('summary-estado').textContent = estadoInput.value || '-';
+        
+        // Información del producto
+        if (medicamentoSeleccionado) {
+            document.getElementById('summary-medicamento').textContent = medicamentoSeleccionado.nombre;
+            document.getElementById('summary-cantidad-producto').textContent = cantidadInput.value;
+            document.getElementById('summary-precio-unitario').textContent = '$' + medicamentoSeleccionado.precio.toFixed(2);
+            document.getElementById('summary-subtotal-producto').textContent = '$' + (medicamentoSeleccionado.precio * parseInt(cantidadInput.value)).toFixed(2);
+        } else {
+            document.getElementById('summary-medicamento').textContent = '-';
+            document.getElementById('summary-cantidad-producto').textContent = '-';
+            document.getElementById('summary-precio-unitario').textContent = '-';
+            document.getElementById('summary-subtotal-producto').textContent = '-';
+        }
+        
+        // Actualizar cálculos
+        actualizarCalculosFinales();
+    }
+
+    // Validación de pasos
+    function validateStep(step) {
+        let isValid = true;
+        
+        if (step === '1') {
+            const cliente = document.getElementById('id_id_cliente');
+            const empleado = document.getElementById('id_id_empleado');
+            const fecha = document.getElementById('id_fecha');
+            
+            if (!cliente.value) {
+                showError(cliente, 'Selecciona un cliente');
+                isValid = false;
+            } else {
+                hideError(cliente);
+            }
+            
+            if (!empleado.value) {
+                showError(empleado, 'Selecciona un empleado');
+                isValid = false;
+            } else {
+                hideError(empleado);
+            }
+            
+            if (!fecha.value) {
+                showError(fecha, 'La fecha es obligatoria');
+                isValid = false;
+            } else {
+                hideError(fecha);
+            }
+        } else if (step === '2') {
+            const medicamento = document.getElementById('id_id_medicamento');
+            const cantidad = document.getElementById('id_cantidad');
+            
+            if (!medicamento.value) {
+                showError(medicamento, 'Selecciona un medicamento');
+                isValid = false;
+            } else {
+                hideError(medicamento);
+            }
+            
+            if (!cantidad.value || parseInt(cantidad.value) < 1) {
+                showError(cantidad, 'La cantidad debe ser al menos 1');
+                isValid = false;
+            } else {
+                // Verificar que no exceda el stock disponible
+                if (medicamentoSeleccionado && parseInt(cantidad.value) > medicamentoSeleccionado.stock) {
+                    showError(cantidad, `No hay suficiente stock. Máximo disponible: ${medicamentoSeleccionado.stock}`);
+                    isValid = false;
+                } else {
+                    hideError(cantidad);
+                }
+            }
+        }
+        
+        return isValid;
+    }
+
+    // Mostrar mensaje de error
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        let errorElement = document.getElementById(field.id + '-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.id = field.id + '-error';
+            errorElement.className = 'error-message';
+            field.parentNode.appendChild(errorElement);
+        }
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    // Ocultar mensaje de error
+    function hideError(field) {
+        field.classList.remove('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    // Validación del formulario
+    document.getElementById('ventaForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validar todos los pasos
+        if (!validateStep('1') || !validateStep('2')) {
+            isValid = false;
+            // Ir al paso 1 para mostrar errores
+            document.querySelectorAll('.step-content').forEach(step => step.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+            updateProgressIndicator('3', '1', true);
+            
+            // Mostrar mensaje de error general
+            if (!document.querySelector('.alert-danger:not(.alert-custom)')) {
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, complete todos los campos obligatorios correctamente.';
+                this.querySelector('.form-container').insertBefore(errorAlert, this.querySelector('.btn-container'));
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+</script>
+
+</body>
+</html>

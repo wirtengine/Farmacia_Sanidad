@@ -305,6 +305,13 @@ class VentaForm(forms.ModelForm):
             'id_empleado': forms.Select(attrs={
                 'class': 'form-control'
             }),
+            'id_medicamento': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'cantidad': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1'
+            }),
             'descuento': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
@@ -332,6 +339,8 @@ class VentaForm(forms.ModelForm):
         self.fields['total'].required = False
         self.fields['id_cliente'].required = False
         self.fields['id_empleado'].required = False
+        self.fields['id_medicamento'].required = False  # Puedes hacerlo requerido si quieres
+        self.fields['cantidad'].required = False
         self.fields['descuento'].required = False
         self.fields['impuesto'].required = False
     
@@ -363,6 +372,9 @@ class LoteForm(forms.ModelForm):
             'id_factura_compra': forms.Select(attrs={
                 'class': 'form-control'
             }),
+            'id_medicamento': forms.Select(attrs={  # NUEVO CAMPO
+                'class': 'form-control'
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -373,6 +385,7 @@ class LoteForm(forms.ModelForm):
         self.fields['fecha_vencimiento'].required = False
         self.fields['estado'].required = False
         self.fields['id_factura_compra'].required = False
+        self.fields['id_medicamento'].required = False  # NUEVO
 
     # =============================
     # VALIDACIONES PERSONALIZADAS
@@ -407,6 +420,7 @@ class LoteForm(forms.ModelForm):
                 )
 
         return cleaned_data
+    
 class FacturaCompraForm(forms.ModelForm):
     class Meta:
         model = FacturaCompra

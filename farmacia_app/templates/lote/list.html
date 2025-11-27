@@ -1,30 +1,383 @@
-<h1>Lista de Lotes</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotes - Sistema Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --light: #f5f7fb;
+            --success: #28a745;
+            --accent: #ffb74d;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
 
-<a href="{% url 'lote_create' %}">➕ Crear Nuevo Lote</a>
+        body {
+            background: var(--light);
+            font-family: "Segoe UI", sans-serif;
+            padding-top: 20px;
+        }
 
-<table border="1">
-    <tr>
-        <th>ID</th
-        <th>Número Lote</th>
-        <th>Cantidad</th>
-        <th>Fabricación</th>
-        <th>Vencimiento</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-    </tr>
+        .container {
+            max-width: 1400px;
+        }
 
-    {% for lote in lotes %}
-    <tr>
-        <td>{{ lote.id_lote }}</td>
-        <td>{{ lote.numero_lote }}</td>
-        <td>{{ lote.cantidad }}</td>
-        <td>{{ lote.fecha_fabricacion }}</td>
-        <td>{{ lote.fecha_vencimiento }}</td>
-        <td>{{ lote.estado }}</td>
-        <td>
-            <a href="{% url 'lote_edit' lote.id_lote %}">Editar</a> |
-            <a href="{% url 'lote_delete' lote.id_lote %}" onclick="return confirm('¿Seguro?');">Eliminar</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+        .header-section {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+        }
+
+        .header-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            background-color: var(--dark);
+            color: white;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(74, 144, 226, 0.05);
+        }
+
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+            border-color: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: #333;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .action-buttons .btn {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 30px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #7f8c8d;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 6px 10px;
+            border-radius: 20px;
+        }
+
+        .lote-info {
+            max-width: 150px;
+        }
+
+        .lote-number {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .lote-details {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .expiry-warning {
+            background-color: #fff3e0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .expiry-danger {
+            background-color: #ffebee;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--danger);
+        }
+
+        .expiry-good {
+            background-color: #e8f5e9;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--success);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons .btn {
+                display: block;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Encabezado -->
+        <div class="header-section fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="header-title"><i class="fas fa-boxes me-2"></i>Gestión de Lotes</h1>
+                    <p class="header-subtitle">Administra los lotes de medicamentos</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="{% url 'home' %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de acciones y búsqueda -->
+        <div class="card fade-in">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <a href="{% url 'lote_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i> Nuevo Lote
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="form-control" placeholder="Buscar lotes...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de lotes -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <i class="fas fa-list me-2"></i> Listado de Lotes
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Número Lote</th>
+                            <th>Medicamento</th>
+                            <th>Cantidad</th>
+                            <th>Fabricación</th>
+                            <th>Vencimiento</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lote in lotes %}
+                        <tr>
+                            <td><strong>#{{ lote.id_lote }}</strong></td>
+                            <td class="lote-info">
+                                <div class="lote-number">{{ lote.numero_lote }}</div>
+                                {% if lote.id_medicamento %}
+                                <div class="lote-details">{{ lote.id_medicamento.nombre_generico }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if lote.id_medicamento %}
+                                    {{ lote.id_medicamento.nombre_generico }}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ lote.cantidad }}</strong>
+                            </td>
+                            <td>{{ lote.fecha_fabricacion|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="{% if lote.estado == 'Vencido' %}expiry-danger{% elif lote.estado == 'Por Vencer' %}expiry-warning{% else %}expiry-good{% endif %}">
+                                    {{ lote.fecha_vencimiento|date:"d/m/Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if lote.estado == 'Activo' %}
+                                    <span class="badge bg-success">{{ lote.estado }}</span>
+                                {% elif lote.estado == 'Inactivo' %}
+                                    <span class="badge bg-secondary">{{ lote.estado }}</span>
+                                {% elif lote.estado == 'Por Vencer' %}
+                                    <span class="badge bg-warning">{{ lote.estado }}</span>
+                                {% elif lote.estado == 'Vencido' %}
+                                    <span class="badge bg-danger">{{ lote.estado }}</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ lote.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="action-buttons">
+                                <a href="{% url 'lote_edit' lote.id_lote %}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit me-1"></i> Editar
+                                </a>
+                                <a href="{% url 'lote_delete' lote.id_lote %}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que quieres eliminar este lote?');">
+                                    <i class="fas fa-trash me-1"></i> Eliminar
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fas fa-boxes"></i>
+                                    <h4>No hay lotes registrados</h4>
+                                    <p>Comienza registrando tu primer lote</p>
+                                    <a href="{% url 'lote_create' %}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-plus-circle me-2"></i> Nuevo Lote
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Animación para las filas de la tabla
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach((row, index) => {
+                row.style.animationDelay = `${index * 0.05}s`;
+                row.classList.add('fade-in');
+            });
+            
+            // Funcionalidad de búsqueda
+            const searchInput = document.querySelector('.search-box input');
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = document.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(filter)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

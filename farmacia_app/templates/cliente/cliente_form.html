@@ -1,97 +1,838 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>{{ titulo }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Cliente - Sistema Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .errors { color: red; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input, textarea { width: 100%; padding: 8px; }
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7fcdbb;
+            --dark: #253237;
+            --light: #f5f7fb;
+            --success: #28a745;
+            --accent: #ffb74d;
+            --danger: #dc3545;
+        }
+
+        body {
+            background: var(--light);
+            font-family: "Segoe UI", sans-serif;
+            padding-bottom: 30px;
+        }
+
+        .page-title {
+            margin: 25px 0;
+            text-align: center;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 2rem;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .input-group-text {
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .btn-accent {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--accent);
+            border: none;
+            color: #333;
+        }
+
+        .btn-accent:hover {
+            background: #ffa726;
+            transform: translateY(-2px);
+            color: #333;
+        }
+
+        .btn-success {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            background: var(--success);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-list {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-list:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            background-color: var(--accent);
+            color: #333;
+        }
+
+        .progress-step.completed {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .suggestion-box {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .input-with-suggestions {
+            position: relative;
+        }
+        
+        .quick-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .quick-option {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-option:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .address-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <h1>{{ titulo }}</h1>
 
-    <!-- Mostrar mensajes -->
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
+<div class="container mb-5">
+    <h2 class="page-title fade-in"><i class="fa-solid fa-user-plus"></i> Nuevo Cliente</h2>
 
-    <!-- Mostrar errores del formulario -->
+    <!-- Indicador de progreso -->
+    <div class="progress-indicator fade-in">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-info alert-custom fade-in">
+        <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa los campos marcados con <span class="required"></span> para registrar al cliente correctamente.
+    </div>
+
+    <!-- Mostrar errores del formulario Django -->
     {% if form.errors %}
-        <div class="errors">
-            <strong>Por favor corrige los errores:</strong>
-            <ul>
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li>{{ field.label }}: {{ error }}</li>
-                    {% endfor %}
+    <div class="alert alert-danger fade-in">
+        <strong>Errores en el formulario:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ field }}: {{ error }}</li>
                 {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        </div>
+            {% endfor %}
+        </ul>
+    </div>
     {% endif %}
 
-    <form method="post">
+    <form method="POST" id="clienteForm">
         {% csrf_token %}
         
-        <!-- Mostrar campos manualmente para mejor control -->
-        <div class="form-group">
-            <label for="id_nombre">Nombre:</label>
-            {{ form.nombre }}
-            {% if form.nombre.errors %}
-                <div class="errors">{{ form.nombre.errors }}</div>
-            {% endif %}
+        <!-- Paso 1: Información Personal -->
+        <div class="step-content active fade-in" id="step1">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-id-card"></i> Información Personal</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Nombre Completo</label>
+                        <div class="input-with-suggestions">
+                            <input type="text" id="id_nombre" required name="nombre" class="form-control" 
+                                   value="{{ form.nombre.value|default:'' }}" placeholder="Ingrese nombre completo">
+                            <div class="suggestion-box" id="nombre-suggestions"></div>
+                        </div>
+                        <div class="error-message" id="id_nombre-error">El nombre solo puede contener letras y espacios</div>
+                        {% if form.nombre.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.nombre.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label required">Cédula</label>
+                        <input type="text" id="id_cedula" required name="cedula" class="form-control" 
+                               value="{{ form.cedula.value|default:'' }}" placeholder="Número de cédula" maxlength="20">
+                        <div class="error-message" id="id_cedula-error">Ingresa un número de cédula válido</div>
+                        {% if form.cedula.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.cedula.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'cliente_list' %}" class="btn btn-list">
+                    <i class="fas fa-list"></i> Ver Lista de Clientes
+                </a>
+                <button type="button" class="btn btn-accent next-step" data-next="2">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="id_cedula">Cédula:</label>
-            {{ form.cedula }}
-            {% if form.cedula.errors %}
-                <div class="errors">{{ form.cedula.errors }}</div>
-            {% endif %}
+        <!-- Paso 2: Información de Contacto -->
+        <div class="step-content fade-in" id="step2">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-address-book"></i> Información de Contacto</div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label required">Teléfono</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="text" id="id_telefono" required name="telefono" class="form-control" 
+                                   value="{{ form.telefono.value|default:'' }}" placeholder="Ej: 5551234" maxlength="15">
+                        </div>
+                        <div class="error-message" id="id_telefono-error">El teléfono solo puede contener números</div>
+                        {% if form.telefono.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.telefono.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Opciones rápidas de teléfono -->
+                        <div class="quick-options">
+                            <div class="quick-option" data-phone="555-1234">555-1234</div>
+                            <div class="quick-option" data-phone="555-5678">555-5678</div>
+                            <div class="quick-option" data-phone="555-9012">555-9012</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" id="id_correo" name="correo" class="form-control" 
+                                   value="{{ form.correo.value|default:'' }}" placeholder="correo@ejemplo.com">
+                        </div>
+                        <div class="error-message" id="id_correo-error">El correo debe contener un @ y ser válido</div>
+                        {% if form.correo.errors %}
+                        <div class="error-message" style="display: block;">
+                            {% for error in form.correo.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Opciones rápidas de correo -->
+                        <div class="quick-options">
+                            <div class="quick-option" data-email="cliente@gmail.com">gmail.com</div>
+                            <div class="quick-option" data-email="cliente@hotmail.com">hotmail.com</div>
+                            <div class="quick-option" data-email="cliente@yahoo.com">yahoo.com</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_direccion" class="form-label">Dirección</label>
+                    <textarea class="form-control" id="id_direccion" name="direccion" rows="3" 
+                              placeholder="Dirección completa del cliente">{{ form.direccion.value|default:'' }}</textarea>
+                    {% if form.direccion.errors %}
+                    <div class="error-message" style="display: block;">
+                        {% for error in form.direccion.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Vista previa de la dirección -->
+                    <div class="address-preview" id="address-preview">
+                        <strong>Vista previa:</strong> <span id="preview-text"></span>
+                    </div>
+                    
+                    <!-- Opciones rápidas de dirección -->
+                    <div class="quick-options">
+                        <div class="quick-option" data-address="Av. Principal #123">Av. Principal</div>
+                        <div class="quick-option" data-address="Calle Secundaria #456">Calle Secundaria</div>
+                        <div class="quick-option" data-address="Urb. Los Olivos">Urb. Los Olivos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'cliente_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="button" class="btn btn-accent next-step" data-next="3">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="id_telefono">Teléfono:</label>
-            {{ form.telefono }}
-            {% if form.telefono.errors %}
-                <div class="errors">{{ form.telefono.errors }}</div>
-            {% endif %}
-        </div>
+        <!-- Paso 3: Confirmación -->
+        <div class="step-content fade-in" id="step3">
+            <div class="form-section">
+                <div class="section-title"><i class="fa-solid fa-check-circle"></i> Confirmación</div>
 
-        <div class="form-group">
-            <label for="id_correo">Correo:</label>
-            {{ form.correo }}
-            {% if form.correo.errors %}
-                <div class="errors">{{ form.correo.errors }}</div>
-            {% endif %}
-        </div>
+                <div class="alert alert-success alert-custom">
+                    <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar.
+                </div>
 
-        <div class="form-group">
-            <label for="id_direccion">Dirección:</label>
-            {{ form.direccion }}
-            {% if form.direccion.errors %}
-                <div class="errors">{{ form.direccion.errors }}</div>
-            {% endif %}
-        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Información Personal</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Nombre:</strong> <span id="summary-nombre">{{ form.nombre.value|default:"-" }}</span></p>
+                                <p><strong>Cédula:</strong> <span id="summary-cedula">{{ form.cedula.value|default:"-" }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-address-book me-2"></i>Información de Contacto</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Teléfono:</strong> <span id="summary-telefono">{{ form.telefono.value|default:"-" }}</span></p>
+                                <p><strong>Correo:</strong> <span id="summary-correo">{{ form.correo.value|default:"-" }}</span></p>
+                                <p><strong>Dirección:</strong> <span id="summary-direccion">{{ form.direccion.value|default:"-" }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Información Adicional</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Fecha de Registro</label>
+                                        <input type="date" class="form-control" id="id_fecha_registro" name="fecha_registro" 
+                                               value="{% now 'Y-m-d' %}">
+                                        {% if form.fecha_registro.errors %}
+                                        <div class="error-message" style="display: block;">
+                                            {% for error in form.fecha_registro.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" id="id_newsletter" name="newsletter" checked>
+                                            <label class="form-check-label" for="id_newsletter">
+                                                Enviar información por correo
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="form-group">
-            <label for="id_fecha_registro">Fecha Registro:</label>
-            {{ form.fecha_registro }}
-            {% if form.fecha_registro.errors %}
-                <div class="errors">{{ form.fecha_registro.errors }}</div>
-            {% endif %}
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'cliente_list' %}" class="btn btn-list me-2">
+                        <i class="fas fa-list"></i> Ver Lista
+                    </a>
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-save"></i> Guardar Cliente
+                </button>
+            </div>
         </div>
-
-        <button type="submit">Guardar</button>
-        <a href="{% url 'cliente_list' %}">Volver a la lista</a>
     </form>
+</div>
+
+<script>
+    // Navegación por pasos
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const nextStep = this.getAttribute('data-next');
+            
+            // Validar campos obligatorios antes de avanzar
+            if (validateStep(currentStep)) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + nextStep).classList.add('active');
+                
+                updateProgressIndicator(currentStep, nextStep);
+                updateSummary();
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.step-content').id.replace('step', '');
+            const prevStep = this.getAttribute('data-prev');
+            
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + prevStep).classList.add('active');
+            
+            updateProgressIndicator(currentStep, prevStep, true);
+        });
+    });
+
+    function updateProgressIndicator(from, to, isBack = false) {
+        const fromStep = document.querySelector(`.progress-step[data-step="${from}"]`);
+        const toStep = document.querySelector(`.progress-step[data-step="${to}"]`);
+        
+        if (isBack) {
+            fromStep.classList.remove('active', 'completed');
+            toStep.classList.add('active');
+        } else {
+            fromStep.classList.remove('active');
+            fromStep.classList.add('completed');
+            toStep.classList.add('active');
+        }
+    }
+
+    // Validación de pasos
+    function validateStep(step) {
+        let isValid = true;
+        
+        if (step === '1') {
+            const nombre = document.getElementById('id_nombre');
+            const cedula = document.getElementById('id_cedula');
+            
+            // Validar nombre (solo letras y espacios)
+            const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+            if (!nombre.value.trim()) {
+                showError(nombre, 'El nombre es obligatorio');
+                isValid = false;
+            } else if (!nombreRegex.test(nombre.value)) {
+                showError(nombre, 'El nombre solo puede contener letras y espacios');
+                isValid = false;
+            } else {
+                hideError(nombre);
+            }
+            
+            // Validar cédula (puede contener letras y números)
+            if (!cedula.value.trim()) {
+                showError(cedula, 'La cédula es obligatoria');
+                isValid = false;
+            } else if (!/^[a-zA-Z0-9]+$/.test(cedula.value)) {
+                showError(cedula, 'La cédula solo puede contener letras y números');
+                isValid = false;
+            } else {
+                hideError(cedula);
+            }
+        } else if (step === '2') {
+            const telefono = document.getElementById('id_telefono');
+            const correo = document.getElementById('id_correo');
+            
+            // Validar teléfono (solo números)
+            if (!telefono.value.trim()) {
+                showError(telefono, 'El teléfono es obligatorio');
+                isValid = false;
+            } else if (!/^\d+$/.test(telefono.value)) {
+                showError(telefono, 'El teléfono solo puede contener números');
+                isValid = false;
+            } else {
+                hideError(telefono);
+            }
+            
+            // Validar correo (debe contener @ si se proporciona)
+            if (correo.value && !correo.value.includes('@')) {
+                showError(correo, 'El correo debe contener un @');
+                isValid = false;
+            } else {
+                hideError(correo);
+            }
+        }
+        
+        return isValid;
+    }
+
+    // Mostrar mensaje de error
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // Ocultar mensaje de error
+    function hideError(field) {
+        field.classList.remove('is-invalid');
+        const errorElement = document.getElementById(field.id + '-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    // Actualizar resumen
+    function updateSummary() {
+        document.getElementById('summary-nombre').textContent = 
+            document.getElementById('id_nombre').value || '-';
+        document.getElementById('summary-cedula').textContent = 
+            document.getElementById('id_cedula').value || '-';
+        document.getElementById('summary-telefono').textContent = 
+            document.getElementById('id_telefono').value || '-';
+        document.getElementById('summary-correo').textContent = 
+            document.getElementById('id_correo').value || '-';
+        document.getElementById('summary-direccion').textContent = 
+            document.getElementById('id_direccion').value || '-';
+    }
+
+    // Validación en tiempo real
+    document.getElementById('id_nombre').addEventListener('input', function() {
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        if (this.value && !regex.test(this.value)) {
+            showError(this, 'El nombre solo puede contener letras y espacios');
+        } else {
+            hideError(this);
+        }
+    });
+
+    document.getElementById('id_cedula').addEventListener('input', function() {
+        if (this.value && !/^[a-zA-Z0-9]+$/.test(this.value)) {
+            showError(this, 'La cédula solo puede contener letras y números');
+        } else {
+            hideError(this);
+        }
+    });
+
+    document.getElementById('id_telefono').addEventListener('input', function() {
+        if (this.value && !/^\d+$/.test(this.value)) {
+            showError(this, 'El teléfono solo puede contener números');
+        } else {
+            hideError(this);
+        }
+    });
+
+    document.getElementById('id_correo').addEventListener('input', function() {
+        if (this.value && !this.value.includes('@')) {
+            showError(this, 'El correo debe contener un @');
+        } else {
+            hideError(this);
+        }
+    });
+
+    // Opciones rápidas para teléfono
+    document.querySelectorAll('.quick-option[data-phone]').forEach(option => {
+        option.addEventListener('click', function() {
+            document.getElementById('id_telefono').value = this.getAttribute('data-phone');
+            hideError(document.getElementById('id_telefono'));
+        });
+    });
+
+    // Opciones rápidas para correo
+    document.querySelectorAll('.quick-option[data-email]').forEach(option => {
+        option.addEventListener('click', function() {
+            const nombre = document.getElementById('id_nombre').value.split(' ')[0].toLowerCase() || 'cliente';
+            document.getElementById('id_correo').value = nombre + this.getAttribute('data-email').replace('cliente', '');
+            hideError(document.getElementById('id_correo'));
+        });
+    });
+
+    // Opciones rápidas para dirección
+    document.querySelectorAll('.quick-option[data-address]').forEach(option => {
+        option.addEventListener('click', function() {
+            const direccionActual = document.getElementById('id_direccion').value;
+            const nuevaDireccion = direccionActual ? direccionActual + ', ' + this.getAttribute('data-address') : this.getAttribute('data-address');
+            document.getElementById('id_direccion').value = nuevaDireccion;
+            updateAddressPreview();
+        });
+    });
+
+    // Vista previa de dirección
+    function updateAddressPreview() {
+        const direccion = document.getElementById('id_direccion').value;
+        const preview = document.getElementById('address-preview');
+        const previewText = document.getElementById('preview-text');
+        
+        if (direccion) {
+            previewText.textContent = direccion;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    document.getElementById('id_direccion').addEventListener('input', updateAddressPreview);
+
+    // Sugerencias de nombres
+    const nombresComunes = ['Juan Pérez', 'María García', 'Carlos López', 'Ana Martínez', 'José Rodríguez', 
+                           'Laura Hernández', 'Miguel González', 'Isabel Sánchez', 'David Ramírez', 'Elena Torres'];
+
+    document.getElementById('id_nombre').addEventListener('input', function() {
+        const valor = this.value.toLowerCase();
+        const sugerencias = document.getElementById('nombre-suggestions');
+        
+        if (valor.length > 1) {
+            const coincidencias = nombresComunes.filter(nombre => 
+                nombre.toLowerCase().includes(valor)
+            );
+            
+            if (coincidencias.length > 0) {
+                sugerencias.innerHTML = '';
+                coincidencias.forEach(nombre => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = nombre;
+                    item.addEventListener('click', function() {
+                        document.getElementById('id_nombre').value = nombre;
+                        sugerencias.style.display = 'none';
+                        hideError(document.getElementById('id_nombre'));
+                    });
+                    sugerencias.appendChild(item);
+                });
+                sugerencias.style.display = 'block';
+            } else {
+                sugerencias.style.display = 'none';
+            }
+        } else {
+            sugerencias.style.display = 'none';
+        }
+    });
+
+    // Cerrar sugerencias al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.input-with-suggestions')) {
+            document.getElementById('nombre-suggestions').style.display = 'none';
+        }
+    });
+
+    // Validación del formulario
+    document.getElementById('clienteForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validar todos los pasos
+        if (!validateStep('1') || !validateStep('2')) {
+            isValid = false;
+            // Ir al paso 1 para mostrar errores
+            document.querySelectorAll('.step-content').forEach(step => step.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+            updateProgressIndicator('3', '1', true);
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // Mostrar mensaje de error general
+            if (!document.querySelector('.alert-danger')) {
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, complete todos los campos obligatorios y verifique los datos ingresados.';
+                this.querySelector('.form-section').insertBefore(errorAlert, this.querySelector('.btn-container'));
+            }
+        }
+    });
+    
+    // Remover clases de error al escribir
+    const inputs = document.querySelectorAll('input:not([type="hidden"]), textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                hideError(this);
+            }
+        });
+    });
+
+    // Inicializar vista previa de dirección
+    updateAddressPreview();
+</script>
+
 </body>
 </html>
