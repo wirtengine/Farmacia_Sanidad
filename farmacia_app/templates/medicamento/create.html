@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Medicamento - Sistema Farmacéutico</title>
+    <title>{% if medicamento %}Editar{% else %}Registrar{% endif %} Medicamento - Sistema Farmacéutico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,9 +18,10 @@
         }
 
         body {
-            background: var(--light);
+            background: linear-gradient(135deg, #f5f7fb 0%, #e4edf5 100%);
             font-family: "Segoe UI", sans-serif;
             padding-bottom: 30px;
+            min-height: 100vh;
         }
 
         .page-title {
@@ -28,31 +29,47 @@
             text-align: center;
             color: var(--dark);
             font-weight: 800;
-            font-size: 2rem;
+            font-size: 2.2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-container {
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
         .form-section {
             background: white;
-            border-radius: 15px;
-            padding: 25px 30px;
+            border-radius: 18px;
+            padding: 30px;
             margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
             border-left: 6px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
         }
 
         .section-title {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f4f8;
         }
 
         .form-label {
             font-weight: 600;
             color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
         }
 
         .required::after {
@@ -64,100 +81,139 @@
             background: var(--primary);
             border: none;
             color: white;
+            font-weight: 600;
         }
 
         .form-control, .form-select {
-            border-radius: 10px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 14px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(44, 127, 184, 0.25);
         }
 
         .btn-primary {
-            padding: 12px 25px;
-            border-radius: 10px;
+            padding: 14px 28px;
+            border-radius: 12px;
             font-weight: 600;
             background: var(--primary);
             border: none;
+            transition: all 0.3s;
+            font-size: 1rem;
         }
 
         .btn-primary:hover {
             background: #216492;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
         }
 
         .btn-secondary {
-            padding: 12px 25px;
-            border-radius: 10px;
+            padding: 14px 28px;
+            border-radius: 12px;
             font-weight: 600;
-        }
-
-        .btn-outline-secondary {
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-weight: 600;
+            transition: all 0.3s;
         }
 
         .state-option {
-            padding: 12px;
-            border-radius: 10px;
-            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #e0e6ed;
             cursor: pointer;
-            transition: .3s;
+            transition: all 0.3s;
             text-align: center;
             font-weight: 600;
+            background: white;
+            height: 100%;
         }
 
         .state-option:hover {
             border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
 
         .state-option.active {
-            background: rgba(44,127,184,0.15);
+            background: rgba(44,127,184,0.12);
             border-color: var(--primary);
             color: var(--primary);
+            box-shadow: 0 5px 15px rgba(44,127,184,0.2);
         }
 
-        .option-card {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
+        .presentation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .presentation-card {
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 20px 15px;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
-            margin-bottom: 10px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
         }
 
-        .option-card:hover {
+        .presentation-card:hover {
             border-color: var(--primary);
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
 
-        .option-card.active {
+        .presentation-card.active {
             border-color: var(--primary);
-            background-color: rgba(44,127,184,0.1);
+            background-color: rgba(44,127,184,0.08);
+            box-shadow: 0 5px 15px rgba(44,127,184,0.15);
         }
 
-        .option-icon {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+        .presentation-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
             color: var(--primary);
+            transition: all 0.3s;
+        }
+
+        .presentation-card.active .presentation-icon {
+            transform: scale(1.1);
+        }
+
+        .presentation-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
         }
 
         .suggestions-box {
             position: absolute;
             background: white;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
             width: 100%;
             max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
             display: none;
         }
 
         .suggestion-item {
-            padding: 10px;
+            padding: 12px 15px;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f0f4f8;
+            transition: background 0.2s;
         }
 
         .suggestion-item:hover {
@@ -167,24 +223,28 @@
         .progress-indicator {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             position: relative;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .progress-indicator::before {
             content: '';
             position: absolute;
-            top: 15px;
+            top: 16px;
             left: 0;
             right: 0;
-            height: 4px;
-            background-color: #e9ecef;
+            height: 6px;
+            background: linear-gradient(to right, #e9ecef 0%, #e9ecef 100%);
             z-index: 1;
+            border-radius: 3px;
         }
 
         .progress-step {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background-color: #e9ecef;
             display: flex;
@@ -194,11 +254,14 @@
             position: relative;
             z-index: 2;
             transition: all 0.3s;
+            color: #6c757d;
+            font-size: 1rem;
         }
 
         .progress-step.active {
             background-color: var(--primary);
             color: white;
+            box-shadow: 0 4px 10px rgba(44,127,184,0.4);
         }
 
         .progress-step.completed {
@@ -208,6 +271,12 @@
 
         .step-content {
             display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .step-content.active {
@@ -217,18 +286,26 @@
         .help-text {
             font-size: 0.85rem;
             color: #6c757d;
-            margin-top: 5px;
+            margin-top: 6px;
+            font-style: italic;
         }
 
         .auto-fill-btn {
             position: absolute;
-            right: 10px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             z-index: 5;
             background: transparent;
             border: none;
             color: var(--primary);
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .auto-fill-btn:hover {
+            color: #216492;
+            transform: translateY(-50%) scale(1.1);
         }
 
         .input-with-icon {
@@ -236,25 +313,134 @@
         }
 
         .input-with-icon .form-control {
-            padding-right: 40px;
+            padding-right: 50px;
         }
 
         .alert-custom {
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 25px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
         
         .btn-list {
             background-color: #6c757d;
             border-color: #6c757d;
             color: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
         }
         
         .btn-list:hover {
             background-color: #5a6268;
             border-color: #545b62;
             color: white;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .field-error {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .form-check-input {
+            width: 3em;
+            height: 1.5em;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .summary-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .summary-section h5 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #e9ecef;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .summary-value {
+            color: #495057;
+            text-align: right;
+        }
+
+        .stock-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stock-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .stock-label {
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        @media (max-width: 768px) {
+            .presentation-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -262,252 +448,375 @@
 <body>
 
 <div class="container mb-5">
-    <h2 class="page-title"><i class="fa-solid fa-capsules"></i> Registrar Nuevo Medicamento</h2>
+    <div class="form-container">
+        <h2 class="page-title"><i class="fa-solid fa-capsules"></i> 
+            {% if medicamento %}Editar{% else %}Registrar Nuevo{% endif %} Medicamento
+        </h2>
 
-    <!-- Indicador de progreso -->
-    <div class="progress-indicator">
-        <div class="progress-step completed" data-step="1"><i class="fas fa-check"></i></div>
-        <div class="progress-step active" data-step="2">2</div>
-        <div class="progress-step" data-step="3">3</div>
-        <div class="progress-step" data-step="4">4</div>
+        <!-- Indicador de progreso -->
+        <div class="progress-indicator">
+            <div class="progress-step completed" data-step="1"><i class="fas fa-check"></i></div>
+            <div class="progress-step active" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="alert alert-info alert-custom">
+            <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa solo los campos marcados con <span class="required"></span> para un registro rápido.
+        </div>
+
+        <!-- Mensajes de error del formulario Django -->
+        {% if form.errors %}
+        <div class="alert alert-danger alert-custom">
+            <i class="fas fa-exclamation-triangle"></i> <strong>Error:</strong> Por favor, corrige los errores en el formulario.
+            <ul class="mb-0 mt-2">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Formulario -->
+        <form method="POST" id="medicamentoForm" 
+              {% if medicamento %} 
+                  action="{% url 'medicamento_edit' medicamento.id_medicamento %}"
+              {% else %}
+                  action="{% url 'medicamento_create' %}"
+              {% endif %}>
+            {% csrf_token %}
+
+            <!-- Paso 1: Información Básica -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información Básica</div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label required">Nombre Genérico</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="id_nombre_generico" required name="nombre_generico" 
+                                       class="form-control {% if form.nombre_generico.errors %}field-error{% endif %}" 
+                                       placeholder="Ej: Paracetamol, Ibuprofeno"
+                                       value="{{ form.nombre_generico.value|default:'' }}">
+                                <button type="button" class="auto-fill-btn" id="suggestNames">
+                                    <i class="fas fa-magic"></i>
+                                </button>
+                            </div>
+                            {% if form.nombre_generico.errors %}
+                                <div class="error-message">{{ form.nombre_generico.errors.0 }}</div>
+                            {% endif %}
+                            <div class="help-text">Comienza a escribir y selecciona una sugerencia</div>
+                            <div class="suggestions-box" id="nameSuggestions"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Código Laboratorio</label>
+                            <input type="text" id="id_cod_laboratorio" name="cod_laboratorio" 
+                                   class="form-control {% if form.cod_laboratorio.errors %}field-error{% endif %}" 
+                                   placeholder="Opcional"
+                                   value="{{ form.cod_laboratorio.value|default:'' }}">
+                            {% if form.cod_laboratorio.errors %}
+                                <div class="error-message">{{ form.cod_laboratorio.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label required">Presentación</label>
+                            <div class="presentation-grid">
+                                {% for value, label in presentation_choices %}
+                                <div class="presentation-card {% if form.presentacion.value == value or not form.presentacion.value and value == 'Tabletas' %}active{% endif %}" 
+                                     data-value="{{ value }}">
+                                    <div class="presentation-icon">
+                                        {% if value == 'Tabletas' %}<i class="fas fa-tablets"></i>
+                                        {% elif value == 'Cápsulas' %}<i class="fas fa-capsules"></i>
+                                        {% elif value == 'Jarabe' %}<i class="fas fa-flask"></i>
+                                        {% elif value == 'Inyectable' %}<i class="fas fa-syringe"></i>
+                                        {% elif value == 'Crema' %}<i class="fas fa-pump-soap"></i>
+                                        {% elif value == 'Ungüento' %}<i class="fas fa-prescription-bottle"></i>
+                                        {% else %}<i class="fas fa-pills"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="presentation-name">{{ label }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" id="id_presentacion" name="presentacion" 
+                                   value="{{ form.presentacion.value|default:'Tabletas' }}">
+                            {% if form.presentacion.errors %}
+                                <div class="error-message">{{ form.presentacion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label required">Vía Administración</label>
+                            <select class="form-select {% if form.via_administracion.errors %}field-error{% endif %}" 
+                                    id="id_via_administracion" name="via_administracion" required>
+                                <option value="" selected disabled>Selecciona una opción</option>
+                                {% for value, label in via_choices %}
+                                    <option value="{{ value }}" 
+                                            {% if form.via_administracion.value == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.via_administracion.errors %}
+                                <div class="error-message">{{ form.via_administracion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'medicamento_list' %}" class="btn btn-list">
+                        <i class="fas fa-list"></i> Ver Lista de Medicamentos
+                    </a>
+                    <button type="button" class="btn btn-primary next-step" data-next="2">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paso 2: Precio y Stock -->
+            <div class="step-content" id="step2">
+                <div class="form-section">
+                    <div class="section-title"><i class="fa-solid fa-box-open"></i> Precio y Stock</div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label required">Precio Unitario</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" min="0" required name="precio_unitario" 
+                                       id="id_precio_unitario" 
+                                       class="form-control {% if form.precio_unitario.errors %}field-error{% endif %}" 
+                                       placeholder="0.00"
+                                       value="{{ form.precio_unitario.value|default:'' }}">
+                            </div>
+                            {% if form.precio_unitario.errors %}
+                                <div class="error-message">{{ form.precio_unitario.errors.0 }}</div>
+                            {% endif %}
+                            <div class="help-text">Precio por unidad</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label required">Cantidad en Stock</label>
+                            <input type="number" min="0" required name="cantidad" id="id_cantidad" 
+                                   class="form-control {% if form.cantidad.errors %}field-error{% endif %}" 
+                                   placeholder="0"
+                                   value="{{ form.cantidad.value|default:'' }}">
+                            {% if form.cantidad.errors %}
+                                <div class="error-message">{{ form.cantidad.errors.0 }}</div>
+                            {% endif %}
+                            <div class="help-text">Unidades disponibles en inventario</div>
+                        </div>
+                    </div>
+
+                    <!-- Información de Stock -->
+                    <div class="stock-info">
+                        <div class="row text-center">
+                            <div class="col-md-12">
+                                <div class="stock-label">Stock Actual</div>
+                                <div class="stock-value" id="stock-display">0 unidades</div>
+                                <div class="help-text">Esta será la cantidad disponible para venta</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <div>
+                        <a href="{% url 'medicamento_list' %}" class="btn btn-list me-2">
+                            <i class="fas fa-list"></i> Ver Lista
+                        </a>
+                        <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-primary next-step" data-next="3">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paso 3: Detalles Adicionales -->
+            <div class="step-content" id="step3">
+                <div class="form-section">
+                    <div class="section-title"><i class="fa-solid fa-boxes-stacked"></i> Detalles Adicionales</div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Dosis</label>
+                            <input type="text" name="dosis" id="id_dosis" 
+                                   class="form-control {% if form.dosis.errors %}field-error{% endif %}" 
+                                   placeholder="Ej: 500mg, 10ml"
+                                   value="{{ form.dosis.value|default:'' }}">
+                            {% if form.dosis.errors %}
+                                <div class="error-message">{{ form.dosis.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Registro Sanitario</label>
+                            <input type="text" id="id_registro_sanitario" name="registro_sanitario" 
+                                   class="form-control {% if form.registro_sanitario.errors %}field-error{% endif %}" 
+                                   placeholder="Opcional"
+                                   value="{{ form.registro_sanitario.value|default:'' }}">
+                            {% if form.registro_sanitario.errors %}
+                                <div class="error-message">{{ form.registro_sanitario.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Caducidad</label>
+                            <input type="date" id="id_fecha_caducidad" name="fecha_caducidad" 
+                                   class="form-control {% if form.fecha_caducidad.errors %}field-error{% endif %}"
+                                   value="{{ form.fecha_caducidad.value|default:'' }}">
+                            {% if form.fecha_caducidad.errors %}
+                                <div class="error-message">{{ form.fecha_caducidad.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <div class="row mt-2">
+                                <div class="col-md-6 mb-2">
+                                    <div class="state-option {% if form.estado.value == '1' or not form.estado.value %}active{% endif %}" data-value="1">
+                                        <i class="fa-solid fa-check-circle"></i> Activo
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <div class="state-option {% if form.estado.value == '0' %}active{% endif %}" data-value="0">
+                                        <i class="fa-solid fa-times-circle"></i> Inactivo
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="id_estado" name="estado" 
+                                   value="{{ form.estado.value|default:'1' }}" required>
+                            {% if form.estado.errors %}
+                                <div class="error-message">{{ form.estado.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" id="id_requiere_receta" 
+                               name="requiere_receta" {% if form.requiere_receta.value %}checked{% endif %}>
+                        <label class="form-check-label" for="id_requiere_receta" style="font-weight: 600; font-size: 1rem;">
+                            Requiere Receta Médica
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <div>
+                        <a href="{% url 'medicamento_list' %}" class="btn btn-list me-2">
+                            <i class="fas fa-list"></i> Ver Lista
+                        </a>
+                        <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-primary next-step" data-next="4">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paso 4: Confirmación -->
+            <div class="step-content" id="step4">
+                <div class="form-section">
+                    <div class="section-title"><i class="fa-solid fa-file-medical"></i> Resumen y Confirmación</div>
+
+                    <div class="alert alert-success alert-custom">
+                        <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar.
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-section">
+                            <h5>Información Básica</h5>
+                            <div class="summary-item">
+                                <span class="summary-label">Nombre:</span>
+                                <span class="summary-value" id="summary-nombre">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Presentación:</span>
+                                <span class="summary-value" id="summary-presentacion">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Vía Administración:</span>
+                                <span class="summary-value" id="summary-via">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Código Laboratorio:</span>
+                                <span class="summary-value" id="summary-cod-lab">-</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <h5>Precio y Stock</h5>
+                            <div class="summary-item">
+                                <span class="summary-label">Precio:</span>
+                                <span class="summary-value">$<span id="summary-precio">-</span></span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Cantidad:</span>
+                                <span class="summary-value" id="summary-cantidad">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Estado:</span>
+                                <span class="summary-value" id="summary-estado">-</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <h5>Detalles Adicionales</h5>
+                            <div class="summary-item">
+                                <span class="summary-label">Dosis:</span>
+                                <span class="summary-value" id="summary-dosis">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Registro Sanitario:</span>
+                                <span class="summary-value" id="summary-registro">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Fecha Caducidad:</span>
+                                <span class="summary-value" id="summary-caducidad">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Requiere Receta:</span>
+                                <span class="summary-value" id="summary-receta">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <div>
+                        <a href="{% url 'medicamento_list' %}" class="btn btn-list me-2">
+                            <i class="fas fa-list"></i> Ver Lista
+                        </a>
+                        <button type="button" class="btn btn-secondary prev-step" data-prev="3">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-success" id="submitButton">
+                        <i class="fa-solid fa-save"></i> 
+                        {% if medicamento %}Actualizar{% else %}Guardar{% endif %} Medicamento
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
-
-    <!-- Alertas -->
-    <div class="alert alert-info alert-custom">
-        <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> Completa solo los campos marcados con <span class="required"></span> para un registro rápido.
-    </div>
-
-    <form method="POST" id="medicamentoForm">
-        {% csrf_token %}
-
-        <!-- Paso 1: Información Básica -->
-        <div class="step-content active" id="step1">
-            <div class="form-section">
-                <div class="section-title"><i class="fa-solid fa-info-circle"></i> Información Básica</div>
-
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <label class="form-label required">Nombre Genérico</label>
-                        <div class="input-with-icon">
-                            <input type="text" id="id_nombre_generico" required name="nombre_generico" class="form-control" placeholder="Ej: Paracetamol, Ibuprofeno">
-                            <button type="button" class="auto-fill-btn" id="suggestNames">
-                                <i class="fas fa-magic"></i>
-                            </button>
-                        </div>
-                        <div class="help-text">Comienza a escribir y selecciona una sugerencia</div>
-                        <div class="suggestions-box" id="nameSuggestions"></div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Código Laboratorio</label>
-                        <input type="text" id="id_cod_laboratorio" name="cod_laboratorio" class="form-control" placeholder="Opcional">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label required">Presentación</label>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="option-card active" data-value="Tabletas">
-                                    <div class="option-icon"><i class="fas fa-tablets"></i></div>
-                                    <div>Tabletas</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="option-card" data-value="Cápsulas">
-                                    <div class="option-icon"><i class="fas fa-capsules"></i></div>
-                                    <div>Cápsulas</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="option-card" data-value="Jarabe">
-                                    <div class="option-icon"><i class="fas fa-flask"></i></div>
-                                    <div>Jarabe</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="option-card" data-value="Inyectable">
-                                    <div class="option-icon"><i class="fas fa-syringe"></i></div>
-                                    <div>Inyectable</div>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="id_presentacion" name="presentacion" value="Tabletas">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label required">Vía Administración</label>
-                        <select class="form-select" id="id_via_administracion" name="via_administracion" required>
-                            <option value="" selected disabled>Selecciona una opción</option>
-                            <option value="Oral">Oral</option>
-                            <option value="Intramuscular">Intramuscular</option>
-                            <option value="Intravenosa">Intravenosa</option>
-                            <option value="Subcutánea">Subcutánea</option>
-                            <option value="Tópica">Tópica</option>
-                            <option value="Oftálmica">Oftálmica</option>
-                            <option value="Ótica">Ótica</option>
-                            <option value="Nasal">Nasal</option>
-                            <option value="Inhalatoria">Inhalatoria</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'medicamento_list' %}" class="btn btn-list">
-                    <i class="fas fa-list"></i> Ver Lista de Medicamentos
-                </a>
-                <button type="button" class="btn btn-primary next-step" data-next="2">
-                    Siguiente <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Paso 2: Precio y Stock -->
-        <div class="step-content" id="step2">
-            <div class="form-section">
-                <div class="section-title"><i class="fa-solid fa-box-open"></i> Precio y Stock</div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label required">Precio Unitario</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" step="0.01" min="0" required name="precio_unitario" id="id_precio_unitario" class="form-control" placeholder="0.00">
-                        </div>
-                        <div class="help-text">Precio por unidad</div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label required">Cantidad</label>
-                        <input type="number" min="0" required name="cantidad" id="id_cantidad" class="form-control" placeholder="0">
-                        <div class="help-text">Unidades en stock</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <div>
-                    <a href="{% url 'medicamento_list' %}" class="btn btn-list me-2">
-                        <i class="fas fa-list"></i> Ver Lista
-                    </a>
-                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
-                        <i class="fas fa-arrow-left"></i> Anterior
-                    </button>
-                </div>
-                <button type="button" class="btn btn-primary next-step" data-next="3">
-                    Siguiente <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Paso 3: Detalles Adicionales -->
-        <div class="step-content" id="step3">
-            <div class="form-section">
-                <div class="section-title"><i class="fa-solid fa-boxes-stacked"></i> Detalles Adicionales</div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Dosis</label>
-                        <input type="text" name="dosis" id="id_dosis" class="form-control" placeholder="Ej: 500mg, 10ml">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Registro Sanitario</label>
-                        <input type="text" id="id_registro_sanitario" name="registro_sanitario" class="form-control" placeholder="Opcional">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label">Fecha Caducidad</label>
-                        <input type="date" id="id_fecha_caducidad" name="fecha_caducidad" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Estado</label>
-                        <div class="row text-center mt-2">
-                            <div class="col-md-6">
-                                <div class="state-option active" data-value="1">
-                                    <i class="fa-solid fa-check-circle"></i> Activo
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="state-option" data-value="0">
-                                    <i class="fa-solid fa-times-circle"></i> Inactivo
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="id_estado" name="estado" value="1" required>
-                    </div>
-                </div>
-
-                <div class="form-check form-switch mt-4">
-                    <input class="form-check-input" type="checkbox" id="id_requiere_receta" name="requiere_receta">
-                    <label class="form-check-label" for="id_requiere_receta">Requiere Receta Médica</label>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <div>
-                    <a href="{% url 'medicamento_list' %}" class="btn btn-list me-2">
-                        <i class="fas fa-list"></i> Ver Lista
-                    </a>
-                    <button type="button" class="btn btn-secondary prev-step" data-prev="2">
-                        <i class="fas fa-arrow-left"></i> Anterior
-                    </button>
-                </div>
-                <button type="button" class="btn btn-primary next-step" data-next="4">
-                    Siguiente <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Paso 4: Confirmación -->
-        <div class="step-content" id="step4">
-            <div class="form-section">
-                <div class="section-title"><i class="fa-solid fa-file-medical"></i> Resumen y Confirmación</div>
-
-                <div class="alert alert-success alert-custom">
-                    <i class="fas fa-check-circle"></i> <strong>¡Casi listo!</strong> Revisa la información antes de guardar.
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Información Básica</h5>
-                        <p><strong>Nombre:</strong> <span id="summary-nombre">-</span></p>
-                        <p><strong>Presentación:</strong> <span id="summary-presentacion">-</span></p>
-                        <p><strong>Vía Administración:</strong> <span id="summary-via">-</span></p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Precio y Stock</h5>
-                        <p><strong>Precio:</strong> $<span id="summary-precio">-</span></p>
-                        <p><strong>Cantidad:</strong> <span id="summary-cantidad">-</span></p>
-                        <p><strong>Estado:</strong> <span id="summary-estado">-</span></p>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <label class="form-label">Observaciones Adicionales (Opcional)</label>
-                    <textarea class="form-control" rows="3" name="observaciones" id="id_observaciones" placeholder="Agrega cualquier observación adicional aquí"></textarea>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <div>
-                    <a href="{% url 'medicamento_list' %}" class="btn btn-list me-2">
-                        <i class="fas fa-list"></i> Ver Lista
-                    </a>
-                    <button type="button" class="btn btn-secondary prev-step" data-prev="3">
-                        <i class="fas fa-arrow-left"></i> Anterior
-                    </button>
-                </div>
-                <button type="submit" class="btn btn-success">
-                    <i class="fa-solid fa-save"></i> Guardar Medicamento
-                </button>
-            </div>
-        </div>
-    </form>
 </div>
 
 <script>
@@ -554,19 +863,24 @@
         }
     }
 
-    // Validación de pasos
+    // Validación de pasos mejorada
     function validateStep(step) {
         let isValid = true;
+        clearErrors();
         
         if (step === '1') {
-            const nombre = document.getElementById('id_nombre_generico').value;
+            const nombre = document.getElementById('id_nombre_generico').value.trim();
             const via = document.getElementById('id_via_administracion').value;
             
             if (!nombre) {
-                alert('Por favor, ingresa el nombre del medicamento');
+                showError('Por favor, ingresa el nombre del medicamento');
+                document.getElementById('id_nombre_generico').classList.add('field-error');
                 isValid = false;
-            } else if (!via) {
-                alert('Por favor, selecciona la vía de administración');
+            }
+            
+            if (!via) {
+                showError('Por favor, selecciona la vía de administración');
+                document.getElementById('id_via_administracion').classList.add('field-error');
                 isValid = false;
             }
         } else if (step === '2') {
@@ -574,10 +888,14 @@
             const cantidad = document.getElementById('id_cantidad').value;
             
             if (!precio || precio <= 0) {
-                alert('Por favor, ingresa un precio válido');
+                showError('Por favor, ingresa un precio válido');
+                document.getElementById('id_precio_unitario').classList.add('field-error');
                 isValid = false;
-            } else if (!cantidad || cantidad < 0) {
-                alert('Por favor, ingresa una cantidad válida');
+            }
+            
+            if (!cantidad || cantidad < 0) {
+                showError('Por favor, ingresa una cantidad válida');
+                document.getElementById('id_cantidad').classList.add('field-error');
                 isValid = false;
             }
         }
@@ -585,10 +903,41 @@
         return isValid;
     }
 
+    // Función para mostrar errores
+    function showError(message) {
+        // Crear notificación más elegante
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning alert-dismissible fade show alert-custom';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insertar después del alert info
+        const infoAlert = document.querySelector('.alert-info');
+        if (infoAlert) {
+            infoAlert.parentNode.insertBefore(alertDiv, infoAlert.nextSibling);
+        }
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // Función para limpiar errores
+    function clearErrors() {
+        document.querySelectorAll('.field-error').forEach(el => {
+            el.classList.remove('field-error');
+        });
+    }
+
     // Selección de presentación con tarjetas
-    document.querySelectorAll('.option-card').forEach(card => {
+    document.querySelectorAll('.presentation-card').forEach(card => {
         card.addEventListener('click', function() {
-            document.querySelectorAll('.option-card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.presentation-card').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
             document.getElementById('id_presentacion').value = this.getAttribute('data-value');
         });
@@ -640,6 +989,12 @@
         }
     });
 
+    // Actualizar display de stock
+    function updateStockDisplay() {
+        const cantidad = document.getElementById('id_cantidad').value || 0;
+        document.getElementById('stock-display').textContent = `${cantidad} unidades`;
+    }
+
     // Cerrar sugerencias al hacer clic fuera
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.input-with-icon')) {
@@ -663,22 +1018,56 @@
             document.getElementById('id_presentacion').value || '-';
         document.getElementById('summary-via').textContent = 
             document.getElementById('id_via_administracion').value || '-';
+        document.getElementById('summary-cod-lab').textContent = 
+            document.getElementById('id_cod_laboratorio').value || '-';
         document.getElementById('summary-precio').textContent = 
             document.getElementById('id_precio_unitario').value || '-';
         document.getElementById('summary-cantidad').textContent = 
             document.getElementById('id_cantidad').value || '-';
+        document.getElementById('summary-dosis').textContent = 
+            document.getElementById('id_dosis').value || '-';
+        document.getElementById('summary-registro').textContent = 
+            document.getElementById('id_registro_sanitario').value || '-';
+        document.getElementById('summary-caducidad').textContent = 
+            document.getElementById('id_fecha_caducidad').value || '-';
         
         const estado = document.getElementById('id_estado').value;
         document.getElementById('summary-estado').textContent = 
             estado === '1' ? 'Activo' : 'Inactivo';
+            
+        const requiereReceta = document.getElementById('id_requiere_receta').checked;
+        document.getElementById('summary-receta').textContent = 
+            requiereReceta ? 'Sí' : 'No';
     }
 
-    // Prevenir envío del formulario hasta que esté completo
+    // Manejar el envío del formulario
     document.getElementById('medicamentoForm').addEventListener('submit', function(e) {
-        if (!validateStep('1') || !validateStep('2')) {
-            e.preventDefault();
-            alert('Por favor, completa todos los campos obligatorios antes de enviar el formulario.');
+        const submitButton = document.getElementById('submitButton');
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        submitButton.disabled = true;
+        
+        // El formulario se enviará normalmente
+    });
+
+    // Inicialización cuando el DOM está listo
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSummary();
+        updateStockDisplay();
+        
+        // Configurar opciones de presentación si existen en el formulario
+        const presentacionValue = document.getElementById('id_presentacion').value;
+        if (presentacionValue) {
+            document.querySelectorAll('.presentation-card').forEach(card => {
+                if (card.getAttribute('data-value') === presentacionValue) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
         }
+        
+        // Actualizar stock display cuando cambie la cantidad
+        document.getElementById('id_cantidad').addEventListener('input', updateStockDisplay);
     });
 </script>
 

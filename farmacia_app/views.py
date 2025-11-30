@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db import transaction
-from django.contrib.auth.decorators import login_required  # <- AÑADE ESTA LÍNEA
+from django.contrib.auth.decorators import login_required  
 from .models import Medicamento, Proveedor, Empleados, Venta, Lote, FacturaCompra, LoteMedicamento, Cliente, DevolucionCliente,DevolucionProveedor
 from .forms import MedicamentoForm, ProveedorForm, EmpleadoForm, VentaForm, LoteForm,FacturaCompraForm, LoteMedicamentoForm, ClienteForm,DevolucionClienteForm,DevolucionProveedorForm
 
@@ -30,62 +30,167 @@ def home(request):
 # ===========================
 # VISTAS DE MEDICAMENTOS
 # ===========================
+@login_required
 def medicamento_list(request):
-    medicamentos = Medicamento.objects.all()
-    return render(request, 'medicamento/list.html', {'medicamentos': medicamentos})
+    """
+    Vista para listar todos los medicamentos
+    """
+    try:
+        medicamentos = Medicamento.objects.all().order_by('nombre_generico')
+        
+        # Filtros opcionales
+        estado_filter = request.GET.get('estado')
+        if estado_filter:
+            medicamentos = medicamentos.filter(estado=int(estado_filter))
+        
+        search_query = request.GET.get('search')
+        if search_query:
+            medicamentos = medicamentos.filter(nombre_generico__icontains=search_query)
+        
+        context = {
+            'medicamentos': medicamentos,
+            'total_medicamentos': medicamentos.count(),
+            'medicamentos_activos': medicamentos.filter(estado=1).count(),
+            'medicamentos_inactivos': medicamentos.filter(estado=0).count(),
+        }
+        
+        return render(request, 'medicamento/list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error al cargar la lista de medicamentos: {str(e)}')
+        return render(request, 'medicamento/list.html', {'medicamentos': []})
 
+@login_required
 def medicamento_create(request):
+    """
+    Vista para crear un nuevo medicamento
+    """
+    # Opciones para los select
+    presentation_choices = [
+        ('Tabletas', 'Tabletas'),
+        ('Cápsulas', 'Cápsulas'), 
+        ('Jarabe', 'Jarabe'),
+        ('Inyectable', 'Inyectable'),
+        ('Crema', 'Crema'),
+        ('Ungüento', 'Ungüento'),
+        ('Supositorio', 'Supositorio'),
+        ('Inhalador', 'Inhalador'),
+        ('Suspensión', 'Suspensión'),
+        ('Polvo', 'Polvo'),
+        ('Granulado', 'Granulado'),
+        ('Spray', 'Spray'),
+        ('Gel', 'Gel'),
+        ('Parche', 'Parche'),
+        ('Implante', 'Implante'),
+        ('Solución', 'Solución'),
+    ]
+    
+    via_choices = [
+        ('Oral', 'Oral'),
+        ('Intramuscular', 'Intramuscular'),
+        ('Intravenosa', 'Intravenosa'),
+        ('Subcutánea', 'Subcutánea'),
+        ('Tópica', 'Tópica'),
+        ('Oftálmica', 'Oftálmica'),
+        ('Ótica', 'Ótica'),
+        ('Nasal', 'Nasal'),
+        ('Inhalatoria', 'Inhalatoria'),
+        ('Rectal', 'Rectal'),
+        ('Vaginal', 'Vaginal'),
+        ('Transdérmica', 'Transdérmica'),
+        ('Sublingual', 'Sublingual'),
+        ('Bucal', 'Bucal'),
+    ]
+
     if request.method == 'POST':
         form = MedicamentoForm(request.POST)
         if form.is_valid():
-            medicamento = form.save(commit=False)
-            # Valores por defecto para evitar errores de la DB
-            if not medicamento.nombre_generico:
-                medicamento.nombre_generico = 'N/A'
-            if medicamento.cantidad is None:
-                medicamento.cantidad = 0
-            if medicamento.precio_unitario is None:
-                medicamento.precio_unitario = 0.0
-            medicamento.save()
-            return redirect('medicamento_list')
+            try:
+                medicamento = form.save(commit=False)
+                
+                # Valores por defecto para evitar errores de la DB
+                if not medicamento.nombre_generico:
+                    medicamento.nombre_generico = 'N/A'
+                if medicamento.cantidad is None:
+                    medicamento.cantidad = 0
+                if medicamento.precio_unitario is None:
+                    medicamento.precio_unitario = 0.0
+                # stock_minimo ya se maneja en el clean_stock_minimo del formulario
+                
+                medicamento.save()
+                messages.success(request, f'Medicamento "{medicamento.nombre_generico}" creado exitosamente.')
+                return redirect('medicamento_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error al guardar el medicamento: {str(e)}')
+                print(f"Error al crear medicamento: {str(e)}")
+        else:
+            messages.error(request, 'Por favor, corrige los errores en el formulario.')
+            print("Errores del formulario:", form.errors)
     else:
         form = MedicamentoForm()
-    return render(request, 'medicamento/create.html', {'form': form})
+    
+    context = {
+        'form': form,
+        'presentation_choices': presentation_choices,
+        'via_choices': via_choices,
+        'accion': 'crear'
+    }
+    
+    return render(request, 'medicamento/create.html', context)
 
-# EDITAR
+@login_required
 def medicamento_edit(request, id_medicamento):
-    medicamento = get_object_or_404(Medicamento, pk=id_medicamento)
-    form = MedicamentoForm(request.POST or None, instance=medicamento)
-    if form.is_valid():
-        medicamento = form.save(commit=False)
-        # Valores por defecto para evitar errores de la DB
-        if not medicamento.nombre_generico:
-            medicamento.nombre_generico = 'N/A'
-        if medicamento.cantidad is None:
-            medicamento.cantidad = 0
-        if medicamento.precio_unitario is None:
-            medicamento.precio_unitario = 0.0
-        medicamento.save()
-        return redirect('medicamento_list')
-    return render(request, 'medicamento/edit.html', {'form': form})
-
-# ELIMINAR
-def medicamento_delete(request, id_medicamento):
-    medicamento = get_object_or_404(Medicamento, pk=id_medicamento)
-    medicamento.delete()
-    return redirect('medicamento_list')
-
-def medicamento_edit(request, id_medicamento):
+    """
+    Vista para editar un medicamento existente
+    """
     medicamento = get_object_or_404(Medicamento, pk=id_medicamento)
     
-    # Debug: mostrar información del medicamento
-    print(f"=== EDITANDO MEDICAMENTO ID: {id_medicamento} ===")
-    print(f"Nombre: {medicamento.nombre_generico}")
-    print(f"Cantidad: {medicamento.cantidad}")
-    print(f"Precio: {medicamento.precio_unitario}")
-    print(f"Estado: {medicamento.estado}")
+    # Opciones para los select
+    presentation_choices = [
+        ('Tabletas', 'Tabletas'),
+        ('Cápsulas', 'Cápsulas'),
+        ('Jarabe', 'Jarabe'),
+        ('Inyectable', 'Inyectable'),
+        ('Crema', 'Crema'),
+        ('Ungüento', 'Ungüento'),
+        ('Supositorio', 'Supositorio'),
+        ('Inhalador', 'Inhalador'),
+        ('Suspensión', 'Suspensión'),
+        ('Polvo', 'Polvo'),
+        ('Granulado', 'Granulado'),
+        ('Spray', 'Spray'),
+        ('Gel', 'Gel'),
+        ('Parche', 'Parche'),
+        ('Implante', 'Implante'),
+        ('Solución', 'Solución'),
+    ]
     
+    via_choices = [
+        ('Oral', 'Oral'),
+        ('Intramuscular', 'Intramuscular'),
+        ('Intravenosa', 'Intravenosa'),
+        ('Subcutánea', 'Subcutánea'),
+        ('Tópica', 'Tópica'),
+        ('Oftálmica', 'Oftálmica'),
+        ('Ótica', 'Ótica'),
+        ('Nasal', 'Nasal'),
+        ('Inhalatoria', 'Inhalatoria'),
+        ('Rectal', 'Rectal'),
+        ('Vaginal', 'Vaginal'),
+        ('Transdérmica', 'Transdérmica'),
+        ('Sublingual', 'Sublingual'),
+        ('Bucal', 'Bucal'),
+    ]
+
     if request.method == 'POST':
+        print(f"=== EDITANDO MEDICAMENTO ID: {id_medicamento} ===")
+        print(f"Nombre actual: {medicamento.nombre_generico}")
+        print(f"Cantidad actual: {medicamento.cantidad}")
+        print(f"Precio actual: {medicamento.precio_unitario}")
+        print(f"Estado actual: {medicamento.estado}")
+        print(f"Stock mínimo actual: {medicamento.stock_minimo}")
+        
         print("=== DATOS DEL FORMULARIO (POST) ===")
         for key, value in request.POST.items():
             print(f"{key}: {value}")
@@ -100,6 +205,8 @@ def medicamento_edit(request, id_medicamento):
                 print(f"Nombre: {medicamento_actualizado.nombre_generico}")
                 print(f"Cantidad: {medicamento_actualizado.cantidad}")
                 print(f"Precio: {medicamento_actualizado.precio_unitario}")
+                print(f"Stock mínimo: {medicamento_actualizado.stock_minimo}")
+                print(f"Estado: {medicamento_actualizado.estado}")
                 
                 # Valores por defecto para evitar errores
                 if not medicamento_actualizado.nombre_generico:
@@ -108,27 +215,134 @@ def medicamento_edit(request, id_medicamento):
                     medicamento_actualizado.cantidad = 0
                 if medicamento_actualizado.precio_unitario is None:
                     medicamento_actualizado.precio_unitario = 0.0
+                # stock_minimo ya se maneja en el clean_stock_minimo del formulario
                 
                 medicamento_actualizado.save()
                 print("=== MEDICAMENTO ACTUALIZADO ===")
+                messages.success(request, f'Medicamento "{medicamento_actualizado.nombre_generico}" actualizado exitosamente.')
                 return redirect('medicamento_list')
+                
             except Exception as e:
                 print(f"=== ERROR AL GUARDAR ===")
                 print(f"Error: {str(e)}")
+                messages.error(request, f'Error al actualizar el medicamento: {str(e)}')
         else:
             print("=== ERRORES DEL FORMULARIO ===")
             print(form.errors)
+            messages.error(request, 'Por favor, corrige los errores en el formulario.')
     else:
         # GET request - mostrar formulario con datos existentes
         form = MedicamentoForm(instance=medicamento)
         print("=== FORMULARIO CARGADO (GET) ===")
         print(f"Valores iniciales del formulario: {form.initial}")
     
-    return render(request, 'medicamento/edit.html', {
+    context = {
         'form': form,
-        'medicamento': medicamento
-    })
+        'medicamento': medicamento,
+        'presentation_choices': presentation_choices,
+        'via_choices': via_choices,
+        'accion': 'editar'
+    }
+    
+    return render(request, 'medicamento/create.html', context)
 
+@login_required
+def medicamento_delete(request, id_medicamento):
+    """
+    Vista para eliminar un medicamento
+    """
+    medicamento = get_object_or_404(Medicamento, pk=id_medicamento)
+    
+    if request.method == 'POST':
+        try:
+            nombre_medicamento = medicamento.nombre_generico
+            medicamento.delete()
+            messages.success(request, f'Medicamento "{nombre_medicamento}" eliminado exitosamente.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar el medicamento: {str(e)}')
+        
+        return redirect('medicamento_list')
+    
+    # Si es GET, mostrar página de confirmación
+    return render(request, 'medicamento/confirm_delete.html', {'medicamento': medicamento})
+
+@login_required
+def medicamento_detail(request, id_medicamento):
+    """
+    Vista para ver los detalles de un medicamento
+    """
+    medicamento = get_object_or_404(Medicamento, pk=id_medicamento)
+    
+    # Calcular estado del stock
+    estado_stock = 'Normal'
+    if medicamento.cantidad <= 0:
+        estado_stock = 'Agotado'
+    elif medicamento.cantidad <= medicamento.stock_minimo:
+        estado_stock = 'Bajo Stock'
+    
+    context = {
+        'medicamento': medicamento,
+        'estado_stock': estado_stock,
+    }
+    
+    return render(request, 'medicamento/detail.html', context)
+
+@login_required
+def medicamento_toggle_estado(request, id_medicamento):
+    """
+    Vista para cambiar el estado de un medicamento (Activo/Inactivo)
+    """
+    medicamento = get_object_or_404(Medicamento, pk=id_medicamento)
+    
+    try:
+        # Cambiar estado
+        nuevo_estado = 0 if medicamento.estado == 1 else 1
+        medicamento.estado = nuevo_estado
+        medicamento.save()
+        
+        estado_texto = 'activado' if nuevo_estado == 1 else 'desactivado'
+        messages.success(request, f'Medicamento "{medicamento.nombre_generico}" {estado_texto} exitosamente.')
+        
+    except Exception as e:
+        messages.error(request, f'Error al cambiar el estado del medicamento: {str(e)}')
+    
+    return redirect('medicamento_list')
+
+@login_required
+def medicamento_stock_report(request):
+    """
+    Vista para generar reporte de stock
+    """
+    try:
+        medicamentos = Medicamento.objects.all().order_by('nombre_generico')
+        
+        # Categorizar medicamentos por estado de stock
+        medicamentos_agotados = medicamentos.filter(cantidad=0)
+        medicamentos_bajo_stock = medicamentos.filter(cantidad__gt=0, cantidad__lte=models.F('stock_minimo'))
+        medicamentos_stock_normal = medicamentos.filter(cantidad__gt=models.F('stock_minimo'))
+        
+        # Estadísticas
+        total_valor_inventario = sum(
+            med.cantidad * (med.precio_unitario or 0) 
+            for med in medicamentos 
+            if med.precio_unitario is not None
+        )
+        
+        context = {
+            'medicamentos_agotados': medicamentos_agotados,
+            'medicamentos_bajo_stock': medicamentos_bajo_stock,
+            'medicamentos_stock_normal': medicamentos_stock_normal,
+            'total_medicamentos': medicamentos.count(),
+            'total_valor_inventario': total_valor_inventario,
+            'total_agotados': medicamentos_agotados.count(),
+            'total_bajo_stock': medicamentos_bajo_stock.count(),
+        }
+        
+        return render(request, 'medicamento/stock_report.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error al generar el reporte de stock: {str(e)}')
+        return render(request, 'medicamento/stock_report.html', {})
 
 # ===========================
 # VISTAS DE PROVEEDORES

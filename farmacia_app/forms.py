@@ -84,7 +84,6 @@ class ProveedorForm(forms.ModelForm):
 # FORMULARIOS DE MEDICAMENTOS
 # ========================
 class MedicamentoForm(forms.ModelForm):
-
     class Meta:
         model = Medicamento
         fields = '__all__'
@@ -157,12 +156,10 @@ class MedicamentoForm(forms.ModelForm):
             }),
         }
 
-    # -----------------------------------------------------
-    # 🔹 Sobrescribir __init__ para volver campos opcionales
-    # -----------------------------------------------------
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # 🔹 AÑADE 'stock_minimo' A LA LISTA DE CAMPOS OPCIONALES
         opcionales = [
             'id_factura_compra',
             'fecha_caducidad',
@@ -173,7 +170,8 @@ class MedicamentoForm(forms.ModelForm):
             'precauciones',
             'presentacion',
             'via_administracion',
-            'fecha_registro'
+            'fecha_registro',
+            'stock_minimo'  # 🔹 ESTA ES LA LÍNEA CLAVE QUE FALTA
         ]
 
         for campo in opcionales:
@@ -185,9 +183,13 @@ class MedicamentoForm(forms.ModelForm):
             (0, "Inactivo")
         ]
 
-    # -----------------------------------------------------
-    # 🔹 Validación: registro sanitario debe ser único
-    # -----------------------------------------------------
+    def clean_stock_minimo(self):
+        """Asegurar que stock_minimo tenga un valor por defecto si está vacío"""
+        stock_minimo = self.cleaned_data.get('stock_minimo')
+        if not stock_minimo:
+            return 10  # Valor por defecto
+        return stock_minimo
+
     def clean_registro_sanitario(self):
         registro_sanitario = self.cleaned_data.get('registro_sanitario')
 

@@ -13,7 +13,11 @@ urlpatterns = [
     path('medicamentos/crear/', login_required(views.medicamento_create), name='medicamento_create'),
     path('medicamentos/editar/<int:id_medicamento>/', login_required(views.medicamento_edit), name='medicamento_edit'),
     path('medicamentos/eliminar/<int:id_medicamento>/', login_required(views.medicamento_delete), name='medicamento_delete'),
-
+    
+    # Vistas adicionales
+    path('medicamentos/detalle/<int:id_medicamento>/', login_required(views.medicamento_detail), name='medicamento_detail'),
+    path('medicamentos/cambiar-estado/<int:id_medicamento>/', login_required(views.medicamento_toggle_estado), name='medicamento_toggle_estado'),
+    path('medicamentos/reporte-stock/', login_required(views.medicamento_stock_report), name='medicamento_stock_report'),
     # =======================
     # RUTAS DE PROVEEDORES
     # =======================
